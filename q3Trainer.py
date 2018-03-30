@@ -5,13 +5,12 @@ import subprocess
 import argparse
 import neat
 import atexit
+import time
 from q3Genome import quakeGenome
 
-def OpenPipe(pipe_name):
+def CreatePipe(pipe_name):
     if not os.path.exists(pipe_name):
-        os.mkfifo(pipe_name)
-    return open(pipe_name,'w',buffering =1)#write to the path only, 1 = line buffer. Start with writting 
-
+    	os.mkfifo(pipe_name)
  
 
 def Initialize(config_file):
@@ -24,7 +23,7 @@ def Initialize(config_file):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--path", type=str,default='./q3NN', help="path to experiment")
-parser.add_argument("--pipePath",'-pp', type=str, default='../pipes/pipe', help="path to pipe")
+parser.add_argument("--pipePath",'-pp', type=str, default='/home/rbons/pipes/pipe', help="path to pipe")
 parser.add_argument('--configPath','-cp', type=str,default='./configs/config-q3Trainer',help="Config-file path for neat-python algorithms")
 parser.add_argument('--init',action='store_true',help="Initiliaze training(remove previous NNs)")
 parser.add_argument('--sPath',type=str,default="../ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
@@ -37,10 +36,18 @@ params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg
 
 
 #INITIALIZATION
-pipe_name = args.pipePath
-CreatePipe(pipe_name)
-initialize(args.configPath)
-popen = subprocess.Popen(params)
+pipeName = args.pipePath
+CreatePipe(pipeName)
+Initialize(args.configPath)
+popen = subprocess.Popen(params);
+
+pipe = open(pipeName,'w')
+pipe.write("Welcome to the jungle \n")
+time.sleep(1)
+pipe.close();
+#pipe.write("This is just a test\n")
+#pipe.close()
+#print("Hello")
 
 def exit_handler():
     print('Killing off subprocesses')
