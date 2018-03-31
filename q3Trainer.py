@@ -41,16 +41,24 @@ CreatePipe(pipeName)
 Initialize(args.configPath)
 popen = subprocess.Popen(params);
 
-pipe = open(pipeName,'w')
-pipe.write("Welcome to the jungle \n")
-time.sleep(1)
-pipe.close();
-#pipe.write("This is just a test\n")
+
+#WRITING
+while True:
+    #READING
+    pipe = open(pipeName,'r')
+    data = pipe.read()
+    print("In Python: %s" % data)
+    pipe.close()
+    #WRITING
+    pipe = open(pipeName,'w')
+    pipe.write("From Python")
+    pipe.close()
+    
 #pipe.close()
-#print("Hello")
 
 def exit_handler():
     print('Killing off subprocesses')
+    pipe.close();
     popen.kill()
 
 
