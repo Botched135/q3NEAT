@@ -10,8 +10,8 @@ from q3Genome import quakeGenome
 
 def CreatePipe(pipe_name):
     if not os.path.exists(pipe_name):
-    	os.mkfifo(pipe_name)
- 
+        os.mkfifo(pipe_name)
+        print("Pipe has been created")
 
 def Initialize(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
