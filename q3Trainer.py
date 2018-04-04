@@ -6,7 +6,17 @@ import argparse
 import neat
 import atexit
 import time
+import numpy as np
 from q3Genome import quakeGenome
+
+def ConvertStringToFloatArray(datastring):
+    strList = datastring.split(':')
+    strList = list(filter(None,strList))
+    numpyList = list
+    for _str in strList:
+        numpyList.append(np.array(_str))
+    print(numpyList)
+    return strList
 
 def CreatePipe(pipe_name):
     if not os.path.exists(pipe_name):
@@ -42,19 +52,15 @@ Initialize(args.configPath)
 popen = subprocess.Popen(params);
 
 
-#WRITING
 while True:
     #READING
     pipe = open(pipeName,'r')
     data = pipe.read()
-    print("In Python: %s" % data)
-    pipe.close()
-    #WRITING
-    pipe = open(pipeName,'w')
-    pipe.write("From Python")
+    if len(data) >0:
+        myString = ConvertStringToFloatArray(data)
+        print("In Python: %s" % myString[0])
     pipe.close()
     
-#pipe.close()
 
 def exit_handler():
     print('Killing off subprocesses')
