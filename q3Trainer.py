@@ -9,15 +9,6 @@ import time
 import numpy as np
 from q3Genome import quakeGenome
 
-def ConvertStringToFloatArray(datastring):
-    strList = datastring.split(':')
-    strList = list(filter(None,strList))
-    numpyList = list
-    for _str in strList:
-        numpyList.append(np.array(_str))
-    print(numpyList)
-    return strList
-
 def CreatePipe(pipe_name):
     if not os.path.exists(pipe_name):
         os.mkfifo(pipe_name)
@@ -29,6 +20,20 @@ def Initialize(config_file):
 		         config_file)
 
     p = neat.Population(config)
+    return p
+
+def ConvertPipeDataToFloatList(datastring):
+    strList = datastring.split(':')
+    strList = list(filter(None,strList))
+    floatArrayList = []
+    for _str in strList:
+        split = _str.split(',')
+        npArray = np.array(split,dtype=float)
+        floatArrayList.append(npArray)
+    return floatArrayList
+
+def RunNEAT(config):
+    pass 
 
 parser = argparse.ArgumentParser()
 
@@ -48,8 +53,8 @@ params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg
 #INITIALIZATION
 pipeName = args.pipePath
 CreatePipe(pipeName)
-Initialize(args.configPath)
-popen = subprocess.Popen(params);
+population = Initialize(args.configPath)
+popen = subprocess.Popen(params)
 
 
 while True:
@@ -57,9 +62,10 @@ while True:
     pipe = open(pipeName,'r')
     data = pipe.read()
     if len(data) >0:
-        myString = ConvertStringToFloatArray(data)
-        print("In Python: %s" % myString[0])
+        q3Data = ConvertPipeDataToFloatList(data)
     pipe.close()
+    #WRITING
+    #pipe = open(pipeName,'w')
     
 
 def exit_handler():
