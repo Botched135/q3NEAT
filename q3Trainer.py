@@ -1,39 +1,40 @@
 from __future__ import print_function
-import os
-import sys
-import subprocess
-import argparse
+import os,sys, subprocess,argparse,time
 import neat
 import atexit
-import time
 import numpy as np
 from q3Genome import quakeGenome
+import q3NEAT as q3n
+import q3Utilities as q3u
 
-def CreatePipe(pipe_name):
-    if not os.path.exists(pipe_name):
-        os.mkfifo(pipe_name)
-        print("Pipe has been created")
+pOpens = []
+def exit_handler():
+    print('Killing off subprocesses')
+    for p in pOpens:
+        p.kill()
 
-def Initialize(config_file):
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction, 
-			 neat.DefaultSpeciesSet, neat.DefaultStagnation,
-		         config_file)
+atexit.register(exit_handler)
 
-    p = neat.Population(config)
-    return p
+# RUNNING
 
-def ConvertPipeDataToFloatList(datastring):
-    strList = datastring.split(':')
-    strList = list(filter(None,strList))
-    floatArrayList = []
-    for _str in strList:
-        split = _str.split(',')
-        npArray = np.array(split,dtype=float)
-        floatArrayList.append(npArray)
-    return floatArrayList
+def TrainingRun(_pipeName,_population,_config):
+    pausing = False
+    #READING
+    pipe = open(pipeName,'r')
+    data = pipe.read()
+    if len(data) >0:
+        q3Data = q3u.ConvertPipeDataToFloatList(data)
+    #Decide when to break
+    #if something:
+    #    pausing = True
+    #    break
+    #
+    pipe.close()
+    NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
+    neatString = q3u.ConvertNEATDataToString(NNOutputs)
+    #WRITE TO Q3
+    return pausing
 
-def RunNEAT(config):
-    pass 
 
 parser = argparse.ArgumentParser()
 
@@ -51,31 +52,23 @@ params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg
 
 
 #INITIALIZATION
+pausing = False
 pipeName = args.pipePath
-CreatePipe(pipeName)
-population = Initialize(args.configPath)
-popen = subprocess.Popen(params)
+q3u.CreatePipe(pipeName)
+population, config = q3n.Initialize(args.configPath)
 
 
+#Open servers
+for i in range(args.servers):
+    pOpens.append(subprocess.Popen(params))
+
+# MAIN
 while True:
-    #READING
-    pipe = open(pipeName,'r')
-    data = pipe.read()
-    if len(data) >0:
-        q3Data = ConvertPipeDataToFloatList(data)
-    pipe.close()
-    #WRITING
-    #pipe = open(pipeName,'w')
-    
+    if not pausing:
+        pausing = TrainingRun(pipeName,population, config)
+    else:
+        pausing = q3n.RunNEAT(population,fitnessParams,config)
 
-def exit_handler():
-    print('Killing off subprocesses')
-    pipe.close();
-    popen.kill()
-
-
-
-atexit.register(exit_handler)
 if __name__ == '__main__':
     popen.wait()
 
