@@ -3,7 +3,7 @@ import os,sys, subprocess,argparse,time
 import neat
 import atexit
 import numpy as np
-from q3Genome import quakeGenome
+from q3Genome import QuakeGenome
 import q3NEAT as q3n
 import q3Utilities as q3u
 
@@ -20,8 +20,8 @@ atexit.register(exit_handler)
 def TrainingRun(_pipeName,_population,_config):
     pausing = False
     #READING
-    pipe = open(pipeName,'r')
-    data = pipe.read()
+    pipeOut = open(pipeName,'r')
+    data = pipeOut.read()
     if len(data) >0:
         q3Data = q3u.ConvertPipeDataToFloatList(data)
     #Decide when to break
@@ -29,10 +29,16 @@ def TrainingRun(_pipeName,_population,_config):
     #    pausing = True
     #    break
     #
-    pipe.close()
-    NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
-    neatString = q3u.ConvertNEATDataToString(NNOutputs)
+    pipeOut.close()
+    neatString = ""
+    if len(data) >0:
+        NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
+        neatString = q3u.ConvertNEATDataToString(NNOutputs)
+    
     #WRITE TO Q3
+    pipeIn = open(pipeName,'w',1)
+    pipeIn.write(neatString)
+    pipeIn.close()
     return pausing
 
 
