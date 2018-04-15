@@ -22,6 +22,8 @@ def TrainingRun(_pipeName,_population,_config):
     #READING
     pipeOut = open(pipeName,'r')
     data = pipeOut.read()
+    pipeOut.close()
+
     if len(data) >0:
         q3Data = q3u.ConvertPipeDataToFloatList(data)
     #Decide when to break
@@ -29,12 +31,14 @@ def TrainingRun(_pipeName,_population,_config):
     #    pausing = True
     #    break
     #
-    pipeOut.close()
+    
+    
     neatString = ""
     if len(data) >0:
         NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
         neatString = q3u.ConvertNEATDataToString(NNOutputs)
     
+    #print(neatString)
     #WRITE TO Q3
     pipeIn = open(pipeName,'w',1)
     pipeIn.write(neatString)

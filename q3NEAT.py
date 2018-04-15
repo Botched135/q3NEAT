@@ -18,7 +18,7 @@ def Eval_Genomes(genomes, fitnessParams, config):
 def Activate_Genomes(pop,inputValues,config):
     outputList = []
     for _input, genome in zip(inputValues, itervalues(pop.population)): 
-        outputList.append(genome.activate(tuple(_input)[:17],config))
+        outputList.append(genome.activate(tuple(_input),config))
     return outputList
 
 def RunNEAT(pop,fitnessParams,config):
