@@ -26,6 +26,7 @@ def TrainingRun(_pipeName,_population,_config):
 
     if len(data) >0:
         q3Data = q3u.ConvertPipeDataToFloatList(data)
+        print(q3Data)
     #Decide when to break
     #if something:
     #    pausing = True
@@ -56,6 +57,7 @@ parser.add_argument('--sPath',type=str,default="../ioq3/build/release-linux-x86_
 parser.add_argument('-s','--servers',type=int, default=1,help="Numbers of server instances")
 parser.add_argument('-t','--speed',type=float, default=10.0,help="Speed/timescale of each server")
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
+parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
 
 args = parser.parse_args()
 params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg")
@@ -73,14 +75,15 @@ for i in range(args.servers):
     pOpens.append(subprocess.Popen(params))
 
 # MAIN
-while True:
-    if not pausing:
-        pausing = TrainingRun(pipeName,population, config)
-    else:
-        pausing = q3n.RunNEAT(population,fitnessParams,config)
+if(args.d == 0):
+    while True:
+        if not pausing:
+            pausing = TrainingRun(pipeName,population, config)
+        else:
+            pausing = q3n.RunNEAT(population,fitnessParams,config)
 
 if __name__ == '__main__':
-    popen.wait()
+    pOpens[0].wait()
 
 
 

@@ -9,6 +9,7 @@ def CreatePipe(pipe_name):
 def ConvertPipeDataToFloatList(datastring):
     if len(datastring) <= 0:
         return None
+    print(datastring)
     strList = datastring.split(':')
     strList = list(filter(None,strList))
     floatArrayList = []
