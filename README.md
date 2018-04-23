@@ -1,5 +1,11 @@
 # The Quake III Bot Adam
-An agent that uses neural network evolved by NEAT, to act as a bot in Quake III. The bots changes neural network depenndin
+An agent that uses neural network evolved by NEAT, to act as a bot in Quake III. The bots changes neural network depending on the users biofeedback using Map Elites.
+
+## Background
+My vision...
+### Relevant articles
+- [Evolving Neural Networks through Augmenting Topologies](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.28.5457&rep=rep1&type=pdf)
+- [Robots that can adapt like animals](https://arxiv.org/pdf/1407.3501.pdf)
 
 ## Requirements
 
