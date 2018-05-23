@@ -1,11 +1,6 @@
 import sys, os, string
 import numpy as np
 
-def CreatePipe(pipe_name):
-    if not os.path.exists(pipe_name):
-        os.mkfifo(pipe_name)
-        print("Pipe has been created")
-
 def ConvertPipeDataToFloatList(datastring):
     if len(datastring) <= 0:
         return None
@@ -33,3 +28,26 @@ def ConvertNEATDataToString(neatArray):
 
 def ConvertArrayToTuple(array):
     return tuple(array)
+
+def SetupPipes(servers,pipe_path):
+    resList = []
+    path = os.path.expanduser(pipe_path)
+    if not os.path.exists(path):
+        os.mkdir(path)
+        print('Created pipe folder')
+
+    for x in range(0,servers):
+            serverPath = '{0}pipeServer{1}/'.format(path,x)
+            if not os.path.exists(serverPath):
+                os.mkdir(serverPath)
+                print('Created pipe {0} folder'.format(x))
+            resList.append('{0}pipeServer{1}'.format(serverPath,(x)))
+
+    for name in resList:
+        if not os.path.exists(name):
+            os.mkfifo(name)
+            print('Pipe has been created at {0}'.format(name))
+
+    return resList
+
+

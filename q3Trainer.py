@@ -8,6 +8,7 @@ import q3NEAT as q3n
 import q3Utilities as q3u
 
 pOpens = []
+pipeNames = []
 def exit_handler():
     print('Killing off subprocesses')
     for p in pOpens:
@@ -50,7 +51,7 @@ def TrainingRun(_pipeName,_population,_config):
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--path", type=str,default='./q3NN', help="path to experiment")
-parser.add_argument("--pipePath",'-pp', type=str, default='/home/rbons/pipes/pipe', help="path to pipe")
+parser.add_argument("--pipePath",'-pp', type=str, default='~/q3Pipes/', help="path to pipe")
 parser.add_argument('--configPath','-cp', type=str,default='./configs/config-q3Trainer',help="Config-file path for neat-python algorithms")
 parser.add_argument('--init',action='store_true',help="Initiliaze training(remove previous NNs)")
 parser.add_argument('--sPath',type=str,default="../ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
@@ -65,12 +66,10 @@ params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg
 
 #INITIALIZATION
 pausing = False
-pipeName = args.pipePath
-q3u.CreatePipe(pipeName)
+pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
 population, config = q3n.Initialize(args.configPath)
 
-
-#Open servers
+'''#Open servers
 for i in range(args.servers):
     pOpens.append(subprocess.Popen(params))
 
@@ -84,7 +83,7 @@ if(args.d == 0):
 
 if __name__ == '__main__':
     pOpens[0].wait()
-
+'''
 
 
 
