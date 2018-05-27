@@ -61,7 +61,6 @@ parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each 
 parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
 
 args = parser.parse_args()
-params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg")
 
 
 #INITIALIZATION
@@ -69,10 +68,15 @@ pausing = False
 pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
 population, config = q3n.Initialize(args.configPath)
 
-'''#Open servers
-for i in range(args.servers):
+
+#Open servers
+for pipePath in pipeNames:
+    _pipe = '+pipe={0}'.format(pipePath);
+    params = (args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg",_pipe)
+    print(params);
     pOpens.append(subprocess.Popen(params))
 
+'''
 # MAIN
 if(args.d == 0):
     while True:
@@ -80,10 +84,10 @@ if(args.d == 0):
             pausing = TrainingRun(pipeName,population, config)
         else:
             pausing = q3n.RunNEAT(population,fitnessParams,config)
-
+'''
 if __name__ == '__main__':
     pOpens[0].wait()
-'''
+
 
 
 
