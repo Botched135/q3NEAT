@@ -42,7 +42,7 @@ def SetupPipes(servers,pipe_path):
             if not os.path.exists(serverPath):
                 os.mkdir(serverPath)
                 print('Created pipe {0} folder'.format(x))
-            resList.append('{0}pipeServer{1}'.format(serverPath,(x)))
+            resList.append('{0}Server{1}pipe'.format(serverPath,(x)))
 
     for name in resList:
         if not os.path.exists(name):

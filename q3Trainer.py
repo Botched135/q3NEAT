@@ -20,16 +20,22 @@ atexit.register(exit_handler)
 
 # RUNNING
 
-def TrainingRun(_pipeNames,_population,_config,_iterations):
+def TrainingRun(_pipeNames,_population,_config):
     pausing = False
-   
-    pausingStr = ('p' if (_iterations > 2000) else 'n')
-    for _pipeName in _pipeNames:
-        #WRITE PAUSING
-        pipeIn = open(_pipeName,'w')
+    global iterations
 
-        pipeIn.write(pausingStr)
+    pausingStr = ('p' if (iterations > 200) else 'n')
+    for _pipeName in _pipeNames:
+        #Check if ready
+        pipeIn = open(_pipeName,'r')
+        pipeIn.read()
         pipeIn.close()
+        #WRITE PAUSING
+    
+        pipeOut = open(_pipeName,'w',1)
+        pipeOut.write(pausingStr)
+        pipeOut.close()
+
         '''
         if pausing:
             pipeOut = open(_pipeName,'r')
@@ -64,7 +70,7 @@ def TrainingRun(_pipeNames,_population,_config,_iterations):
         pipeIn = open(pipeName,'w',1)
         pipeIn.write(neatString)
         pipeIn.close()'''
-    _iterations +=1;
+    iterations +=1;
     return pausing
 
 
@@ -83,7 +89,7 @@ parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
 args = parser.parse_args()
 
 
-#INITIALIZATION
+#INITIALIZATIONimUnboundLocalError
 pausing = False
 pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
 population, config = q3n.Initialize(args.configPath)
@@ -102,7 +108,7 @@ if(args.d == 0):
     while True:
             # if not pausing:
                 #Re-think the pausing
-            pausing = TrainingRun(pipeNames,population, config,iterations)
+            pausing = TrainingRun(pipeNames,population, config)
             #else:
              #   pausing = q3n.RunNEAT(population,fitnessParams,config)
 
