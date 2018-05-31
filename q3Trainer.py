@@ -9,6 +9,8 @@ import q3Utilities as q3u
 
 pOpens = []
 pipeNames = []
+iterations = 0
+
 def exit_handler():
     print('Killing off subprocesses')
     for p in pOpens:
@@ -18,33 +20,51 @@ atexit.register(exit_handler)
 
 # RUNNING
 
-def TrainingRun(_pipeName,_population,_config):
+def TrainingRun(_pipeNames,_population,_config,_iterations):
     pausing = False
-    #READING
-    pipeOut = open(pipeName,'r')
-    data = pipeOut.read()
-    pipeOut.close()
+   
+    pausingStr = ('p' if (_iterations > 2000) else 'n')
+    for _pipeName in _pipeNames:
+        #WRITE PAUSING
+        pipeIn = open(_pipeName,'w')
 
-    if len(data) >0:
-        q3Data = q3u.ConvertPipeDataToFloatList(data)
-        print(q3Data)
-    #Decide when to break
-    #if something:
-    #    pausing = True
-    #    break
-    #
+        pipeIn.write(pausingStr)
+        pipeIn.close()
+        '''
+        if pausing:
+            pipeOut = open(_pipeName,'r')
+            fitnessData = pipeOut.read()
+            if len(fitnessData) >0:
+                fitnessList = q3u.ConvertPipeDataToFloatList(fitnessData)
+            iterations = 0
+            continue
+        
+        #READING
+        pipeOut = open(_pipeName,'r')
+        data = pipeOut.read()
+        pipeOut.close()
+
+        if len(data) >0:
+            q3Data = q3u.ConvertPipeDataToFloatList(data)
+            print(q3Data)
+        #Decide when to break
+        #if something:
+        #    pausing = True
+        #    break
+        #
     
     
-    neatString = ""
-    if len(data) >0:
-        NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
-        neatString = q3u.ConvertNEATDataToString(NNOutputs)
-    
-    #print(neatString)
-    #WRITE TO Q3
-    pipeIn = open(pipeName,'w',1)
-    pipeIn.write(neatString)
-    pipeIn.close()
+        neatString = ""
+        if len(data) >0:
+            NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
+            neatString = q3u.ConvertNEATDataToString(NNOutputs)
+     
+        #print(neatString)
+        #WRITE TO Q3
+        pipeIn = open(pipeName,'w',1)
+        pipeIn.write(neatString)
+        pipeIn.close()'''
+    _iterations +=1;
     return pausing
 
 
@@ -76,15 +96,16 @@ for pipePath in pipeNames:
     print(params);
     pOpens.append(subprocess.Popen(params))
 
-'''
+
 # MAIN
 if(args.d == 0):
     while True:
-        if not pausing:
-            pausing = TrainingRun(pipeName,population, config)
-        else:
-            pausing = q3n.RunNEAT(population,fitnessParams,config)
-'''
+            # if not pausing:
+                #Re-think the pausing
+            pausing = TrainingRun(pipeNames,population, config,iterations)
+            #else:
+             #   pausing = q3n.RunNEAT(population,fitnessParams,config)
+
 if __name__ == '__main__':
     pOpens[0].wait()
 

@@ -33,7 +33,7 @@ class QuakeGenome(neat.DefaultGenome):
         ANNOutput.insert(0,self.clientNum)
         return ANNOutput
 
-    def evaluateGenome(_input):
+    def evaluateGenome(self,_input):
         #SOME GODDAM FORMULAR
         self.fitness = 0
 
