@@ -20,58 +20,48 @@ atexit.register(exit_handler)
 
 # RUNNING
 
-def TrainingRun(_pipeNames,_population,_config):
-    pausing = False
-    global iterations
-
-    pausingStr = ('p' if (iterations > 200) else 'n')
-    for _pipeName in _pipeNames:
-        #Check if ready
-        pipeIn = open(_pipeName,'r')
+def TrainingRun(_pipeNames,_population,_config,pausingStr):
+    resList = []
+    for pipeName in _pipeNames:
+        
+        # CHECK IF READY
+        pipeIn = open(pipeName,'r')
         pipeIn.read()
         pipeIn.close()
-        #WRITE PAUSING
-    
-        pipeOut = open(_pipeName,'w',1)
+        
+        # WRITE PAUSING
+        pipeOut = open(pipeName,'w',1)
         pipeOut.write(pausingStr)
         pipeOut.close()
-
-        '''
-        if pausing:
-            pipeOut = open(_pipeName,'r')
+        
+        # WRITE FITNESS
+        if pausingStr == 'p':
+            pipeOut = open(pipeName,'r')
             fitnessData = pipeOut.read()
             if len(fitnessData) >0:
                 fitnessList = q3u.ConvertPipeDataToFloatList(fitnessData)
-            iterations = 0
-            continue
+            pipeOut.close()
+
         
-        #READING
-        pipeOut = open(_pipeName,'r')
-        data = pipeOut.read()
+        #READING STATES
+        pipeIn = open(pipeName,'r')
+        botState = pipeIn.read()
+        pipeIn.close()
+
+        if len(botState) >0:
+            q3Data = q3u.ConvertPipeDataToFloatList(botState)
+    
+        # RUN STATES THROUGH THE GENOMES
+        neatString = ""
+        #if len(botState) >0:
+           # NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config) # TODO: Make certain that the population are switched between the servers
+            #neatString = q3u.ConvertNEATDataToString(NNOutputs)
+     
+        # WRITE TO Q3
+        pipeOut = open(pipeName,'w',1)
+        pipeOut.write(neatString)
         pipeOut.close()
 
-        if len(data) >0:
-            q3Data = q3u.ConvertPipeDataToFloatList(data)
-            print(q3Data)
-        #Decide when to break
-        #if something:
-        #    pausing = True
-        #    break
-        #
-    
-    
-        neatString = ""
-        if len(data) >0:
-            NNOutputs = q3n.Activate_Genomes(_population,q3Data, _config)
-            neatString = q3u.ConvertNEATDataToString(NNOutputs)
-     
-        #print(neatString)
-        #WRITE TO Q3
-        pipeIn = open(pipeName,'w',1)
-        pipeIn.write(neatString)
-        pipeIn.close()'''
-    iterations +=1;
-    return pausing
 
 
 parser = argparse.ArgumentParser()
@@ -82,6 +72,7 @@ parser.add_argument('--configPath','-cp', type=str,default='./configs/config-q3T
 parser.add_argument('--init',action='store_true',help="Initiliaze training(remove previous NNs)")
 parser.add_argument('--sPath',type=str,default="../ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
 parser.add_argument('-s','--servers',type=int, default=1,help="Numbers of server instances")
+parser.add_argument('-a','--agents',type=int, default=1,help="Numbers of agents per server instance")
 parser.add_argument('-t','--speed',type=float, default=10.0,help="Speed/timescale of each server")
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
 parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
@@ -106,11 +97,13 @@ for pipePath in pipeNames:
 # MAIN
 if(args.d == 0):
     while True:
-            # if not pausing:
-                #Re-think the pausing
-            pausing = TrainingRun(pipeNames,population, config)
-            #else:
-             #   pausing = q3n.RunNEAT(population,fitnessParams,config)
+            pausingStr = ('p' if (iterations < -1) else 'n')
+            if pausingStr == 'n':
+                TrainingRun(pipeNames,population, config,pausingStr)
+                iterations+=1
+            else:
+                done = q3n.RunNEAT(population,fitnessParams,config)
+                iterations = 0
 
 if __name__ == '__main__':
     pOpens[0].wait()

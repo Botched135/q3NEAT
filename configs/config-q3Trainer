@@ -5,9 +5,9 @@ pop_size              = 10
 reset_on_extinction   = False
 
 [QuakeGenome]
-num_inputs              = 17
+num_inputs              = 23
 num_hidden              = 0
-num_outputs             = 4
+num_outputs             = 11
 initial_connection      = partial 0.5
 feed_forward            = True
 compatibility_disjoint_coefficient = 1.0

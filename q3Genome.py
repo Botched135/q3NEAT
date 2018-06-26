@@ -29,7 +29,7 @@ class QuakeGenome(neat.DefaultGenome):
             self.ANN = neat.nn.FeedForwardNetwork.create(self, config)
             self.clientNum = _input[0]
             #self.serverNum = 0
-        ANNOutput = self.ANN.activate(_input)
+        ANNOutput = self.ANN.activate(_input[1:])
         ANNOutput.insert(0,self.clientNum)
         return ANNOutput
 
