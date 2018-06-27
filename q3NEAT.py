@@ -15,10 +15,10 @@ def Eval_Genomes(genomes, fitnessParams, config):
     for genome, p in zip(genomes,fintessParams):
         genome.evaluateGenome(p)
 
-def Activate_Genomes(pop,inputValues,config):
+def Activate_Genomes(pop,inputValues,config,pipeNumber):
     outputList = []
     for _input, genome in zip(inputValues, itervalues(pop.population)): 
-        outputList.append(genome.activate(tuple(_input),config))
+        outputList.append(genome.activate(tuple(_input),config,pipeNumber))
     return outputList
 
 def RunNEAT(pop,fitnessParams,config):
