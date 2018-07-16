@@ -31,7 +31,7 @@ def TrainingRun(_pipeNames,_population,_config,pausingStr):
         pipeIn.close()
         
         # WRITE PAUSING
-        pipeOut = open(pipeName,'w',1)
+        pipeOut = open(pipeName,'w')
         pipeOut.write(pausingStr)
         pipeOut.close()
         
@@ -60,7 +60,7 @@ def TrainingRun(_pipeNames,_population,_config,pausingStr):
             neatString = q3u.ConvertNEATDataToString(NNOutputs)
      
         # WRITE TO Q3
-        pipeOut = open(pipeName,'w',1)
+        pipeOut = open(pipeName,'w')
         pipeOut.write(neatString)
         pipeOut.close()
 

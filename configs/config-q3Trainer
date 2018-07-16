@@ -7,7 +7,7 @@ reset_on_extinction   = False
 [QuakeGenome]
 num_inputs              = 23
 num_hidden              = 0
-num_outputs             = 11
+num_outputs             = 10
 initial_connection      = partial 0.5
 feed_forward            = True
 compatibility_disjoint_coefficient = 1.0

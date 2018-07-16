@@ -1,0 +1,7 @@
+More bot notes:
+
+Right now, find enemy is only called when it is in seek mode. (SOLVED)
+Neat output needs to be connected to the correct server
+Weird error, when the client is joining the game after the bots. No problems if it is the other way around
+Adam crashes, due to numpy error if there is another bot 
+Often hits a none-weapon number.
