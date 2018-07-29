@@ -3,6 +3,9 @@ import q3Genome
 import q3Utilities as q3u
 from neat.six_util import iteritems, itervalues
 
+class CompleteExtinctionException(Exception):
+    pass
+
 def Initialize(config_file):
     c = neat.Config(q3Genome.QuakeGenome, neat.DefaultReproduction, 
 			 neat.DefaultSpeciesSet, neat.DefaultStagnation,
@@ -11,24 +14,25 @@ def Initialize(config_file):
     p = neat.Population(c)
     return p, c
 
-def Eval_Genomes(genomes, fitnessParams, config):
-    for genome, p in zip(genomes,fintessParams):
-        genome.evaluateGenome(p)
+def Eval_Genomes(popIterator, fitnessParams, config):
+    for genome in popIterator:
+        genome.evaluateGenome(fitnessParams)
 
-def Activate_Genomes(pop,inputValues,config,pipeNumber):
+def Activate_Genomes(popIterator,inputValues,config):
     outputList = []
-    for _input, genome in zip(inputValues, itervalues(pop.population)): 
-        outputList.append(genome.activate(tuple(_input),config,pipeNumber))
+    for _input in inputValues:
+        genome = next(popIterator)
+        outputList.append(genome.activate(tuple(_input),config))
     return outputList
 
-def RunNEAT(pop,fitnessParams,config):
+def RunNEAT(pop,config):
     # Get varibles out of object
     # Evaluate fitness for each genome based on custom fitness function
-    Eval_Genomes(list(iteritems(pop.population)),fitnessParams,config)
     # Gather and report statistics.
+    
     best = None
-    for genomes in itervalues(pop.population):
-        if best is None or genomes.fitness > best.fitness:
+    for g in iter(pop.population.values()):
+        if best is None or g.fitness > best.fitness:
             best = g
 
     # Consider prining this to some log of a sort 
@@ -51,15 +55,15 @@ def RunNEAT(pop,fitnessParams,config):
     if not pop.species.species:
         pop.reporters.complete_extinction()
 
-     # If requested by the user, create a completely new population,
-     # otherwise raise an exception.
-    if config.reset_on_extinction:
-        pop.population = pop.reproduction.create_new(config.genome_type,
+         # If requested by the user, create a completely new population,
+         # otherwise raise an exception.
+        if config.reset_on_extinction:
+            pop.population = pop.reproduction.create_new(config.genome_type,
                                                       config.genome_config,
                                                       config.pop_size)
-    else:
-        raise CompleteExtinctionException()
-        return False
+        else:
+            raise CompleteExtinctionException()
+            return False
 
      # Divide the new population into species.
     pop.species.speciate(config, pop.population, pop.generation)

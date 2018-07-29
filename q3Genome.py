@@ -24,12 +24,10 @@ class QuakeGenome(neat.DefaultGenome):
         dist = super().distance(other, config)
         return dist
 
-    def activate(self,_input,config,pipeNumber):
+    def activate(self,_input,config):
         if self.ANN == None:
             self.ANN = neat.nn.FeedForwardNetwork.create(self, config)
             self.clientNum = _input[0]
-            if self.serverNum == -1:
-                self.serverNum = pipeNumber
         _ANNInput =_input[1:]
         ANNOutput = self.ANN.activate(_ANNInput)
         ANNOutput.insert(0,self.clientNum)
@@ -37,7 +35,7 @@ class QuakeGenome(neat.DefaultGenome):
 
     def evaluateGenome(self,_input):
         #SOME GODDAM FORMULAR
-        self.fitness = 0
+        self.fitness = 10
 
 
 
