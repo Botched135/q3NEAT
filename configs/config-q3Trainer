@@ -1,7 +1,7 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 3.9
-pop_size              = 2
+pop_size              = 40
 reset_on_extinction   = False
 
 [QuakeGenome]
@@ -47,6 +47,7 @@ weight_mutate_power     = 0.4
 enabled_default         = True
 enabled_mutate_rate     = 0.01
 
+
 [DefaultGenome]
 # node activation options
 activation_default      = sigmoid
@@ -86,10 +87,6 @@ initial_connection      = full
 node_add_prob           = 0.2
 node_delete_prob        = 0.2
 
-# network parameters
-num_hidden              = 0
-num_inputs              = 2
-num_outputs             = 1
 
 # node response options
 response_init_mean      = 1.0

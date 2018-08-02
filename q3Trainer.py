@@ -7,6 +7,7 @@ import numpy as np
 from q3Genome import QuakeGenome
 import q3NEAT as q3n
 import q3Utilities as q3u
+import q3Visualize as q3v
 
 pOpens = []
 pipeNames = []
@@ -22,56 +23,6 @@ def exit_handler():
 
 atexit.register(exit_handler)
 
-# RUNNING
-
-def TrainingRun(_pipeNames,_population,_config,pausing):
-    resList = []
-    pausingStr = 'p' if pausing else 'n'
-    populationIterator = iter(_population.values())
-    for pipeName in _pipeNames:
-        
-        # CHECK IF READY
-        pipeIn = open(pipeName,'r')
-        pipeIn.read()
-        pipeIn.close()
-        
-        # WRITE PAUSING
-        pipeOut = open(pipeName,'w')
-        pipeOut.write(pausingStr)
-        pipeOut.close()
-        
-        # READ FITNESS
-        if pausing == True:
-            pipeOut = open(pipeName,'r')
-            fitnessData = pipeOut.read()
-            pipeOut.close()
-            if len(fitnessData) >0:
-                fitnessList = q3u.ConvertPipeDataToFloatList(fitnessData)
-                q3n.Eval_Genomes(populationIterator,fitnessList,_config)
-            continue;
-
-        
-        #READING STATES
-        pipeIn = open(pipeName,'r')
-        botState = pipeIn.read()
-        pipeIn.close()
-
-        if len(botState) >0:
-            q3Data = q3u.ConvertPipeDataToFloatList(botState)
-
-       
-        # RUN STATES THROUGH THE GENOMES
-        neatString = "error"
-        if len(botState) >0:
-            #print(q3Data)
-            NNOutputs = q3n.Activate_Genomes(populationIterator,q3Data,_config)
-            neatString = q3u.ConvertNEATDataToString(NNOutputs)
-     
-        # WRITE TO Q3
-        pipeOut = open(pipeName,'w')
-        pipeOut.write(neatString)
-        pipeOut.close()
-   
 
 parser = argparse.ArgumentParser()
 
@@ -85,48 +36,68 @@ parser.add_argument('-a','--agents',type=int, default=1,help="Numbers of agents 
 parser.add_argument('-t','--speed',type=float, default=5.0,help="Speed/timescale of each server")
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
 parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
+parser.add_argument('-checkpoint',type=str,help="Path to checkpoint to start from")
 
 args = parser.parse_args()
 
 
 #INITIALIZATIONimUnboundLocalError
 pausing = False
+
 pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
 population, config = q3n.Initialize(args.configPath)
 populationDict = population.population
+if not args.init and args.checkpoint is not None:
+    population = neat.restore_checkpoint(args.checkpoint)
 #Indexer array
 keyIter = iter(populationDict.keys())
-indicers = np.zeros([args.servers,args.agents],dtype=int)
+#indicers = np.zeros([args.servers,args.agents],dtype=int)
 
-assert(indicers.size == config.pop_size),("Indicers size is {0}, but should be {1}").format(indicers.size,config.pop_size)
+#assert(indicers.size == config.pop_size),("Indicers size is {0}, but should be {1}").format(indicers.size,config.pop_size)
 
-for indexer in np.nditer(indicers, op_flags=['writeonly']):
-    indexer[...] = next(keyIter)
+#for indexer in np.nditer(indicers, op_flags=['writeonly']):
+ #   indexer[...] = next(keyIter)
 
 #Open servers
 for pipePath in pipeNames:
     _pipe = '+pipe={0}'.format(pipePath);
     params = ("xterm","-hold","-e",args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg",_pipe)
-    print(params)
     pOpens.append(subprocess.Popen(params))
+
+#Setup NEAT-reporter
+#Parameter is whether or not to show speices details
+population.add_reporter(neat.StdOutReporter(True))
+#Parameters is generations or seconds
+population.add_reporter(neat.Checkpointer(25, 900,filename_prefix='checkpoints/quake3-checkpoint-'))
+stats = neat.StatisticsReporter()
+population.add_reporter(stats)
+
 
 
 # MAIN
 if(args.d == 0):
-    while True:
-            pausing = (True if (iterations > 100) else False)
-            TrainingRun(pipeNames,populationDict, config,pausing)
+    while True: #population.generation < 51:
+            pausing = (True if (iterations > 1000) else False)
+            q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:
                 done = q3n.RunNEAT(population,config)
                 populationDict = population.population
                 keyIter = iter(populationDict.keys())
 
-                for indexer in np.nditer(indicers, op_flags=['writeonly']):
-                    indexer[...] = next(keyIter)
+                #for indexer in np.nditer(indicers, op_flags=['writeonly']):
+                    #indexer[...] = next(keyIter)
                 
                 iterations = 0
-                print(population.generation)
+                #Some kind of break here
+               
+
+    q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness.svg')
+    q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species.svg')
+
+    #node_names={} draw winner 
+    #visualize.draw_net
+
 
 if __name__ == '__main__':
     pOpens[0].wait()

@@ -1,6 +1,7 @@
 import os
 import sys
 import neat
+import random
 
 
 class QuakeGenome(neat.DefaultGenome):
@@ -35,7 +36,7 @@ class QuakeGenome(neat.DefaultGenome):
 
     def evaluateGenome(self,_input):
         #SOME GODDAM FORMULAR
-        self.fitness = 10
+        self.fitness = random.random()*3.5
 
 
 

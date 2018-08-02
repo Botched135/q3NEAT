@@ -15,13 +15,8 @@ def Initialize(config_file):
     return p, c
 
 def Eval_Genomes(popIterator, fitnessParams, config):
-    inter = 0
     for genome in popIterator:
-        try:
             genome.evaluateGenome(fitnessParams)
-            inter += 1 
-        except StopIteration:
-            print(inter)
 
 def Activate_Genomes(popIterator,inputValues,config):
     outputList = []
@@ -33,11 +28,61 @@ def Activate_Genomes(popIterator,inputValues,config):
             pass
     return outputList
 
+def TrainingRun(_pipeNames,_population,_config,pausing):
+    resList = []
+    pausingStr = 'p' if pausing else 'n'
+    populationIterator = iter(_population.values())
+    for pipeName in _pipeNames:
+        
+        # CHECK IF READY
+      #  pipeIn = open(pipeName,'r') #Seems to be problems here
+       # pipeIn.read()
+       # pipeIn.close()
+        
+        # WRITE PAUSING
+        pipeOut = open(pipeName,'w')
+        pipeOut.write(pausingStr)
+        pipeOut.close()
+        
+        # READ FITNESS
+        if pausing == True:
+            pipeOut = open(pipeName,'r')
+            fitnessData = pipeOut.read()
+            pipeOut.close()
+            if len(fitnessData) >0:
+                fitnessList = q3u.ConvertPipeDataToFloatList(fitnessData)
+                Eval_Genomes(populationIterator,fitnessList,_config)
+            continue;
+
+        
+        #READING STATES
+        pipeIn = open(pipeName,'r')
+        botState = pipeIn.read()
+        pipeIn.close()
+
+        if len(botState) >0:
+            q3Data = q3u.ConvertPipeDataToFloatList(botState)
+
+       
+        # RUN STATES THROUGH THE GENOMES
+        neatString = "error"
+        if len(botState) >0:
+            #print(q3Data)
+            NNOutputs = Activate_Genomes(populationIterator,q3Data,_config)
+            neatString = q3u.ConvertNEATDataToString(NNOutputs)
+     
+        # WRITE TO Q3
+        pipeOut = open(pipeName,'w')
+        pipeOut.write(neatString)
+        pipeOut.close()
+   
+
 def RunNEAT(pop,config):
     # Get varibles out of object
     # Evaluate fitness for each genome based on custom fitness function
     # Gather and report statistics.
-    
+    pop.reporters.start_generation(pop.generation)
+
     best = None
     for g in iter(pop.population.values()):
         if best is None or g.fitness > best.fitness:
@@ -58,6 +103,7 @@ def RunNEAT(pop,config):
 
     # Create the next generation from the current generation.
     pop.population = pop.reproduction.reproduce(config,pop.species,config.pop_size,pop.generation)
+
      
     # Check for complete extinction.
     if not pop.species.species:
@@ -75,7 +121,6 @@ def RunNEAT(pop,config):
 
      # Divide the new population into species.
     pop.species.speciate(config, pop.population, pop.generation)
-
     pop.reporters.end_generation(config, pop.population, pop.species)
 
     pop.generation += 1
