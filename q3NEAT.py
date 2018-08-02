@@ -15,14 +15,22 @@ def Initialize(config_file):
     return p, c
 
 def Eval_Genomes(popIterator, fitnessParams, config):
+    inter = 0
     for genome in popIterator:
-        genome.evaluateGenome(fitnessParams)
+        try:
+            genome.evaluateGenome(fitnessParams)
+            inter += 1 
+        except StopIteration:
+            print(inter)
 
 def Activate_Genomes(popIterator,inputValues,config):
     outputList = []
     for _input in inputValues:
-        genome = next(popIterator)
-        outputList.append(genome.activate(tuple(_input),config))
+        try:
+            genome = next(popIterator)
+            outputList.append(genome.activate(tuple(_input),config))
+        except StopIteration:
+            pass
     return outputList
 
 def RunNEAT(pop,config):
