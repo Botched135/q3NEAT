@@ -1,4 +1,5 @@
 from __future__ import print_function
+from signal import signal, SIGPIPE, SIG_DFL 
 import os,sys, subprocess,argparse,time
 import shlex 
 import neat
@@ -30,12 +31,12 @@ parser.add_argument("--path", type=str,default='./q3NN', help="path to experimen
 parser.add_argument("--pipePath",'-pp', type=str, default='~/q3Pipes/', help="path to pipe")
 parser.add_argument('--configPath','-cp', type=str,default='./configs/config-q3Trainer',help="Config-file path for neat-python algorithms")
 parser.add_argument('--init',action='store_true',help="Initiliaze training(remove previous NNs)")
-parser.add_argument('--sPath',type=str,default="../ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
+parser.add_argument('--sPath',type=str,default="../debug/ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
 parser.add_argument('-s','--servers',type=int, default=2,help="Numbers of server instances")
 parser.add_argument('-a','--agents',type=int, default=1,help="Numbers of agents per server instance")
 parser.add_argument('-t','--speed',type=float, default=5.0,help="Speed/timescale of each server")
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
-parser.add_argument('-d',type=int,default=0, help="Dry run (no training)")
+parser.add_argument('-d','--dry', action='store_true', help="Dry run (no training)")
 parser.add_argument('-checkpoint',type=str,help="Path to checkpoint to start from")
 
 args = parser.parse_args()
@@ -75,7 +76,7 @@ population.add_reporter(stats)
 
 
 # MAIN
-if(args.d == 0):
+if(args.dry == False):
     while True: #population.generation < 51:
             pausing = (True if (iterations > 1000) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
@@ -89,7 +90,7 @@ if(args.d == 0):
                     #indexer[...] = next(keyIter)
                 
                 iterations = 0
-                #Some kind of break here
+                #Some kind of break here.. Consider using a thread for the trainer to keep the pipe flow
                
 
     q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness.svg')

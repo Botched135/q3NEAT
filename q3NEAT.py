@@ -35,9 +35,9 @@ def TrainingRun(_pipeNames,_population,_config,pausing):
     for pipeName in _pipeNames:
         
         # CHECK IF READY
-      #  pipeIn = open(pipeName,'r') #Seems to be problems here
-       # pipeIn.read()
-       # pipeIn.close()
+        pipeIn = open(pipeName,'r') #Seems to be problems here
+        pipeIn.read()
+        pipeIn.close()
         
         # WRITE PAUSING
         pipeOut = open(pipeName,'w')

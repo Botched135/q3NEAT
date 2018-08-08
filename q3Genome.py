@@ -28,10 +28,7 @@ class QuakeGenome(neat.DefaultGenome):
     def activate(self,_input,config):
         if self.ANN == None:
             self.ANN = neat.nn.FeedForwardNetwork.create(self, config)
-            self.clientNum = _input[0]
-        _ANNInput =_input[1:]
-        ANNOutput = self.ANN.activate(_ANNInput)
-        ANNOutput.insert(0,self.clientNum)
+        ANNOutput = self.ANN.activate(_input)
         return ANNOutput
 
     def evaluateGenome(self,_input):
