@@ -78,7 +78,7 @@ population.add_reporter(stats)
 # MAIN
 if(args.dry == False):
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 1000) else False)
+            pausing = (True if (iterations > 100) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:

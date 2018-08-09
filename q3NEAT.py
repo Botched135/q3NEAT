@@ -46,28 +46,27 @@ def TrainingRun(_pipeNames,_population,_config,pausing):
         
         # READ FITNESS
         if pausing == True:
-            pipeOut = open(pipeName,'r')
-            fitnessData = pipeOut.read()
-            pipeOut.close()
+            pipeIn = open(pipeName,'r')
+            fitnessData = pipeIn.read()
+            pipeIn.close()
             if len(fitnessData) >0:
                 fitnessList = q3u.ConvertPipeDataToFloatList(fitnessData)
                 Eval_Genomes(populationIterator,fitnessList,_config)
-            continue;
+            pipeOut = open(pipeName,'w')
+            pipeOut.write("f")
+            pipeOut.close()
+            continue
 
         
         #READING STATES
         pipeIn = open(pipeName,'r')
         botState = pipeIn.read()
         pipeIn.close()
-
-        if len(botState) >0:
-            q3Data = q3u.ConvertPipeDataToFloatList(botState)
-
        
         # RUN STATES THROUGH THE GENOMES
         neatString = "error"
         if len(botState) >0:
-            #print(q3Data)
+            q3Data = q3u.ConvertPipeDataToFloatList(botState)
             NNOutputs = Activate_Genomes(populationIterator,q3Data,_config)
             neatString = q3u.ConvertNEATDataToString(NNOutputs)
      
