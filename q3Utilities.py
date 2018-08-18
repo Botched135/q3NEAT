@@ -15,14 +15,23 @@ def ConvertPipeDataToFloatList(datastring):
         floatArrayList.append(npArray)
     return floatArrayList
 
-def ConvertNEATDataToString(neatArray):
+def NEATDataToString(floatArray):
+    if len(floatArray) <= 0:
+        return None
+
+    currentString = ""
+    for values in floatArray:
+        currentString+= "{:.3f},".format(values)
+
+    return currentString;
+
+def ConvertNEATDataListToString(neatArray):
     if len(neatArray) <= 0:
         return None
     finalString = ""
     for floatArray in neatArray:
-        for values in floatArray:
-            finalString += "{:.2f},".format(values)
-        finalString+='-1,'
+        finalString += NEATDataToString(floatArray)
+        finalString+='-3,'
 
     return finalString
 
@@ -48,7 +57,7 @@ def SetupPipes(servers,pipe_path):
         if not os.path.exists(name):
             os.mkfifo(name)
             print('Pipe has been created at {0}'.format(name))
-
+    
     return resList
 
 

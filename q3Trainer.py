@@ -1,7 +1,5 @@
 from __future__ import print_function
-from signal import signal, SIGPIPE, SIG_DFL 
 import os,sys, subprocess,argparse,time
-import shlex 
 import neat
 import atexit
 import numpy as np
@@ -14,30 +12,19 @@ pOpens = []
 pipeNames = []
 iterations = 0
 
-def exit_handler():
-    print('Killing off subprocesses')
-    for p in pOpens:
-        p.kill()
-    print('Deleting pipes')
-    for pipe in pipeNames:
-        os.remove(pipe)
-
-atexit.register(exit_handler)
-
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument("--path", type=str,default='./q3NN', help="path to experiment")
 parser.add_argument("--pipePath",'-pp', type=str, default='~/q3Pipes/', help="path to pipe")
 parser.add_argument('--configPath','-cp', type=str,default='./configs/config-q3Trainer',help="Config-file path for neat-python algorithms")
-parser.add_argument('--init',action='store_true',help="Initiliaze training(remove previous NNs)")
+parser.add_argument('--init',action='store_true',help="Initialize training(start with new population)")
 parser.add_argument('--sPath',type=str,default="../debug/ioq3/build/release-linux-x86_64/ioq3ded.x86_64",help="path to the server file")
 parser.add_argument('-s','--servers',type=int, default=2,help="Numbers of server instances")
-parser.add_argument('-a','--agents',type=int, default=1,help="Numbers of agents per server instance")
+parser.add_argument('-a','--agents',type=int, default=4,help="Numbers of agents per server instance")
 parser.add_argument('-t','--speed',type=float, default=5.0,help="Speed/timescale of each server")
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
 parser.add_argument('-d','--dry', action='store_true', help="Dry run (no training)")
-parser.add_argument('-checkpoint',type=str,help="Path to checkpoint to start from")
+parser.add_argument('--checkpoint',type=str,help="Path to checkpoint for restoring population from disk")
 
 args = parser.parse_args()
 
@@ -46,11 +33,18 @@ args = parser.parse_args()
 pausing = False
 
 pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
-population, config = q3n.Initialize(args.configPath)
-populationDict = population.population
-if not args.init and args.checkpoint is not None:
-    population = neat.restore_checkpoint(args.checkpoint)
+
+if args.init is True:
+    if args.checkpoint is not None:
+        print('Initialization has been set to true. Not restoring from checkpoint!') 
+    population, config = q3n.Initialize(args.configPath)
+elif args.checkpoint is not None:
+    population = q3n.RestoreFromCheckpoint(args.checkpoint)
+    config = population.config
+else:
+    raise Exception('Poplation has neither been loaded from disk or initialized!')
 #Indexer array
+populationDict = population.population
 keyIter = iter(populationDict.keys())
 #indicers = np.zeros([args.servers,args.agents],dtype=int)
 
@@ -73,31 +67,34 @@ population.add_reporter(neat.Checkpointer(25, 900,filename_prefix='checkpoints/q
 stats = neat.StatisticsReporter()
 population.add_reporter(stats)
 
+def exit_handler():
+    print('Killing off subprocesses')
+    for p in pOpens:
+        p.kill()
+    print('Deleting pipes')
+    for pipe in pipeNames:
+        os.remove(pipe)
+    if population.generation > 5:
+        q3n.EndNEAT(population,stats,config)
 
-
+atexit.register(exit_handler)
+population.reporters.start_generation(population.generation)
 # MAIN
 if(args.dry == False):
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 100) else False)
+            pausing = (True if (iterations > 600) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:
                 done = q3n.RunNEAT(population,config)
                 populationDict = population.population
                 keyIter = iter(populationDict.keys())
-
-                #for indexer in np.nditer(indicers, op_flags=['writeonly']):
-                    #indexer[...] = next(keyIter)
                 
                 iterations = 0
+                population.reporters.start_generation(population.generation)
                 #Some kind of break here.. Consider using a thread for the trainer to keep the pipe flow
-               
 
-    q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness.svg')
-    q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species.svg')
-
-    #node_names={} draw winner 
-    #visualize.draw_net
+    q3n.EndNEAT(population,stats,config)
 
 
 if __name__ == '__main__':
