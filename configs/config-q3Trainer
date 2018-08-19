@@ -1,13 +1,13 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 3.9
-pop_size              = 140
+pop_size              = 164
 reset_on_extinction   = False
 
 [QuakeGenome]
 num_inputs              = 23
 num_hidden              = 0
-num_outputs             = 7
+num_outputs             = 4
 initial_connection      = partial 0.5
 feed_forward            = False
 compatibility_disjoint_coefficient = 1.0
@@ -16,8 +16,8 @@ conn_add_prob           = 0.15
 conn_delete_prob        = 0.1
 node_add_prob           = 0.15
 node_delete_prob        = 0.1
-activation_default      = sigmoid
-activation_options      = sigmoid
+activation_default      = clamped
+activation_options      = clamped
 activation_mutate_rate  = 0.0
 aggregation_default     = sum
 aggregation_options     = sum
@@ -110,7 +110,7 @@ weight_replace_rate     = 0.1
 compatibility_threshold = 3.0
 
 [DefaultStagnation]
-species_fitness_func = max
+species_fitness_func = mean
 max_stagnation       = 20
 species_elitism      = 2
 

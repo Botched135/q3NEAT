@@ -113,7 +113,6 @@ def ActivationRun(pipeName,genome,config):
         q3Data = q3u.ConvertPipeDataToFloatList(botState)
         NNOutputs = genome.activate(tuple(q3Data[0]),config)
         neatString = q3u.NEATDataToString(NNOutputs)
-        print("Neat output: "+neatString)
 
     # WRITE TO Q3
     pipeOut = open(pipeName,'w')
