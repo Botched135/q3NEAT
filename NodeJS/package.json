@@ -1,0 +1,11 @@
+{
+  "name": "AQ3-Empatica-client",
+  "version": "1.0.0",
+  "dependencies": {
+    "binstring": "^0.2.1",
+    "empatica-e4-client": "^1.0.4",
+    "net": "^1.0.2"
+  },
+  "description": "Empatica client for Affective Quake",
+  "author": "Rasmus Bons"
+}

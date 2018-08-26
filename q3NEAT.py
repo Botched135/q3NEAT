@@ -34,6 +34,7 @@ def Activate_Genomes(popIterator,inputValues,config):
             genome = next(popIterator)
             outputList.append(genome.activate(tuple(_input),config))
         except StopIteration:
+            print("Error with iterations")
             pass
     return outputList
 
@@ -103,7 +104,6 @@ def ActivationRun(pipeName,genome,config):
     #READING STATES
     pipeIn = open(pipeName,'r')
     botState = pipeIn.read()
-    print("Botstates: "+botState)
     pipeIn.close()
 
        
@@ -113,6 +113,7 @@ def ActivationRun(pipeName,genome,config):
         q3Data = q3u.ConvertPipeDataToFloatList(botState)
         NNOutputs = genome.activate(tuple(q3Data[0]),config)
         neatString = q3u.NEATDataToString(NNOutputs)
+
 
     # WRITE TO Q3
     pipeOut = open(pipeName,'w')
@@ -172,17 +173,18 @@ def RunNEAT(pop,config):
 
 def EndNEAT(pop, stats,config):
     winner = pop.best_genome
-    q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness.svg')
+    winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
+    q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness{0}.svg'.format(winnerName))
     q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species.svg')
     node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'wallRadar[-1,0]',-4:'wallRadar[0,-1]',
                  -5:'wallRadar[0.7,0.7]',-6:'wallRadar[-0.7,0.7]',-7:'wallRadar[-0.7,-0.7]',-8:'wallRadar[0.7,-0.7]',
                  -9:'enemyRadar[RightBack]',-10:'enemyRadar[LeftBack]',-11:'enemyRadar[Right45ø]',-12:'enemyRadar[Left45ø]',
                  -13:'enemyRadar[RightFront20ø]',-14:'enemyRadar[LeftFront20ø]',-15:'enemyRadar[RightFront15ø]',-16:'enemyRadar[LeftFront15ø]',
                  -17:'enemyRadar[RightFront7.5ø]',-18:'enemyRadar[LeftFront7.5ø]',-19:'enemyRadar[RightFront2.5ø]',-20:'enemyRadar[LeftFront2.5ø]',
-                 -21:'OnTarget',-22:'TakingDmg',-23:'bias',
-                0:'Shoot',1:'Move Forward',2:' Move Backward',3:'Move Left',4:'Move right', 5:'Turn Left',6:'Turn Right'}
+                 -21:'enemyRadar[Front7Ø]',-22:'OnTarget',
+                0:'Shoot',1:'Move Forward/Backward',2:' Move Left/Right',3:'Turn left/right'}
 
-    winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
+   
     winnerPath = "winnerGenomes/{0}".format(winnerName)
 
     with open(winnerName,'wb') as f:

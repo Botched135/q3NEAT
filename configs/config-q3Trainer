@@ -1,17 +1,18 @@
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 3.9
-pop_size              = 164
+fitness_threshold     = 60.0
+pop_size              = 185
 reset_on_extinction   = False
 
 [QuakeGenome]
-num_inputs              = 23
+num_inputs              = 22
 num_hidden              = 0
 num_outputs             = 4
-initial_connection      = partial 0.5
-feed_forward            = False
+initial_connection      = full_direct
+
+feed_forward            = True
 compatibility_disjoint_coefficient = 1.0
-compatibility_weight_coefficient   = 1.0
+compatibility_weight_coefficient   = 0.75	
 conn_add_prob           = 0.15
 conn_delete_prob        = 0.1
 node_add_prob           = 0.15
@@ -110,11 +111,11 @@ weight_replace_rate     = 0.1
 compatibility_threshold = 3.0
 
 [DefaultStagnation]
-species_fitness_func = mean
+species_fitness_func = max
 max_stagnation       = 20
 species_elitism      = 2
 
 [DefaultReproduction]
-elitism            = 2
+elitism            = 3
 survival_threshold = 0.2
 

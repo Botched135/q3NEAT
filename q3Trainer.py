@@ -82,7 +82,7 @@ population.reporters.start_generation(population.generation)
 # MAIN
 if(args.dry == False):
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 600) else False)
+            pausing = (True if (iterations > 900) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:

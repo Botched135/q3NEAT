@@ -28,11 +28,13 @@ def NEATDataToString(floatArray):
 def ConvertNEATDataListToString(neatArray):
     if len(neatArray) <= 0:
         return None
+
     finalString = ""
     for floatArray in neatArray:
         finalString += NEATDataToString(floatArray)
-        finalString+='-3,'
 
+        finalString+='-3,'
+        
     return finalString
 
 def ConvertArrayToTuple(array):
