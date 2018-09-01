@@ -42,9 +42,5 @@ class QuakeGenome(neat.DefaultGenome):
         #self.age+=1
         #self.totalFit += accuracy-movementFails-deaths
         #self.fitness = self.totalFit/self.age;
-        self.fitness = accuracy+movementFails+deaths
-        if self.fitness == 0:
-            print(accuracy)
-            print(movementFails)
-            print(deaths)
+        self.fitness = accuracy+movementFails-deaths
 

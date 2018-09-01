@@ -4,7 +4,13 @@
   "dependencies": {
     "binstring": "^0.2.1",
     "empatica-e4-client": "^1.0.4",
-    "net": "^1.0.2"
+    "extended": "0.0.6",
+    "fast-csv": "^2.4.1",
+    "file-system": "^2.2.2",
+    "is-extended": "0.0.10",
+    "net": "^1.0.2",
+    "object-extended": "0.0.7",
+    "string-extended": "0.0.8"
   },
   "description": "Empatica client for Affective Quake",
   "author": "Rasmus Bons"
