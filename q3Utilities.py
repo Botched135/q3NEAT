@@ -17,7 +17,7 @@ def ConvertPipeDataToFloatList(datastring):
 
 def NEATDataToString(floatArray):
     if len(floatArray) <= 0:
-        return None
+        return ""
 
     currentString = ""
     for values in floatArray:
@@ -27,7 +27,7 @@ def NEATDataToString(floatArray):
 
 def ConvertNEATDataListToString(neatArray):
     if len(neatArray) <= 0:
-        return None
+        return ""
 
     finalString = ""
     for floatArray in neatArray:

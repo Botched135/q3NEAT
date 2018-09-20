@@ -11,7 +11,7 @@ class QuakeGenome(neat.DefaultGenome):
         self.clientNum= -1
         self.serverNum= -1
         self.totalFit = 0
-        self.fitness = 0
+        self.fitness = -1
         self.age = 0
         #NN
 
@@ -37,10 +37,9 @@ class QuakeGenome(neat.DefaultGenome):
     def evaluateGenome(self,_input):
         #SOME GODDAM FORMULAR
         accuracy = _input[0]
-        movementFails = _input[1]
-        deaths = _input[2]
+        #movementFails = _input[1]
+        #deaths = _input[2]
         #self.age+=1
         #self.totalFit += accuracy-movementFails-deaths
         #self.fitness = self.totalFit/self.age;
-        self.fitness = accuracy+movementFails-deaths
-
+        self.fitness = accuracy

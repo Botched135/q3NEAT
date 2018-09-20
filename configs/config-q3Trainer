@@ -1,11 +1,11 @@
 [NEAT]
 fitness_criterion     = max
 fitness_threshold     = 60.0
-pop_size              = 186
+pop_size              = 180
 reset_on_extinction   = False
 
 [QuakeGenome]
-num_inputs              = 16
+num_inputs              = 12
 num_hidden              = 0
 num_outputs             = 3
 initial_connection      = full_direct
@@ -111,7 +111,7 @@ weight_replace_rate     = 0.1
 compatibility_threshold = 2.5
 
 [DefaultStagnation]
-species_fitness_func = max
+species_fitness_func = mean
 max_stagnation       = 20
 species_elitism      = 2
 

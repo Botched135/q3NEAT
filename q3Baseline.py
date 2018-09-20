@@ -38,4 +38,7 @@ HRMedian = np.median(HR_array)
 IBIMedian = np.median(IBI_array)
 HRVMedian = np.median(HRV_array)
 
-print(HR_array)
+print("EDA Median: "+EDAMedian)
+print("HR Median: "+HRMedian)
+print("IBI Median: "+IBIMedian)
+print("HRV Median: "+HRVMedian)

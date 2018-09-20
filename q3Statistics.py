@@ -71,24 +71,6 @@ for index in range(len(Categories)):
 	NonAffectiveSTD.append(np.std(NonAffectiveValues))
 
 
-# width of the bars
-barWidth = 0.3
-# One for each category, two in each
-# The x position of bars
-r1 = np.arange(len(AffectiveMean))
-r2 = [x + barWidth for x in r1]
- 
-# Create blue bars
-plt.bar(r1, AffectiveMean, width = barWidth, color = 'orange', edgecolor = 'black', capsize=7, label='Affective')
- 
-# Create cyan bars
-plt.bar(r2, NonAffectiveMean, width = barWidth, color = '#468499', edgecolor = 'black',  capsize=7, label='Non-Affective')
- 
-# general layout
-plt.xticks([r + barWidth/2 for r in range(len(AffectiveMean))], Categories)
-plt.ylabel('Mean')
-plt.legend()
- 
 # Show graphic
 
 
@@ -179,5 +161,52 @@ else:
 		    print("There is a signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
 	    else:
 		    print("There is NO signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
+
+
+# width of the bars
+barWidth = 0.3
+# One for each category, two in each
+# The x position of bars
+r1 = np.arange(len(AffectiveMean))
+r2 = [x + barWidth for x in r1]
+ 
+# Create blue bars
+plt.bar(r1, AffectiveMean, width = barWidth, color = 'orange', edgecolor = 'black', capsize=7, label='Affective')
+ 
+# Create cyan bars
+plt.bar(r2, NonAffectiveMean, width = barWidth, color = '#468499', edgecolor = 'black',  capsize=7, label='Non-Affective')
+ 
+# general layout
+plt.xticks([r + barWidth/2 for r in range(len(AffectiveMean))], Categories)
+plt.ylabel('Mean')
+plt.title('Comparison of Affective and Non-Affective version')
+plt.legend()
+
+plt.show()
+
+# Create blue bars
+plt.bar(r1, AffectiveMedian, width = barWidth, color = 'orange', edgecolor = 'black', capsize=6, label='Affective')
+ 
+# Create cyan bars
+plt.bar(r2, NonAffectiveMedian, width = barWidth, color = '#468499', edgecolor = 'black',  capsize=6, label='Non-Affective')
+ 
+# general layout
+plt.xticks([r + barWidth/2 for r in range(len(AffectiveMedian))], Categories)
+plt.ylabel('Median')
+plt.title('Comparison of Affective and Non-Affective version')
+plt.legend()
+
+plt.show()
+
+plt.bar(r1, AffectiveSTD, width = barWidth, color = 'orange', edgecolor = 'black', capsize=7, label='Affective')
+ 
+# Create cyan bars
+plt.bar(r2, NonAffectiveSTD, width = barWidth, color = '#468499', edgecolor = 'black',  capsize=7, label='Non-Affective')
+ 
+# general layout
+plt.xticks([r + barWidth/2 for r in range(len(AffectiveSTD))], Categories)
+plt.ylabel('Standard Deviation')
+plt.title('Comparison of Affective and Non-Affective version')
+plt.legend()
 
 plt.show()

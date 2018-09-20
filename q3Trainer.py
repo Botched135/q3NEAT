@@ -38,14 +38,16 @@ if args.init is True:
     if args.checkpoint is not None:
         print('Initialization has been set to true. Not restoring from checkpoint!') 
     population, config = q3n.Initialize(args.configPath)
+    populationDict = population.population
+    keyIter = iter(populationDict.keys())
 elif args.checkpoint is not None:
     population = q3n.RestoreFromCheckpoint(args.checkpoint)
     config = population.config
-else:
+    populationDict = population.population
+    keyIter = iter(populationDict.keys())
+elif args.dry is False:
     raise Exception('Poplation has neither been loaded from disk or initialized!')
-#Indexer array
-populationDict = population.population
-keyIter = iter(populationDict.keys())
+
 #indicers = np.zeros([args.servers,args.agents],dtype=int)
 
 #assert(indicers.size == config.pop_size),("Indicers size is {0}, but should be {1}").format(indicers.size,config.pop_size)
@@ -61,11 +63,13 @@ for pipePath in pipeNames:
 
 #Setup NEAT-reporter
 #Parameter is whether or not to show speices details
-population.add_reporter(neat.StdOutReporter(True))
-#Parameters is generations or seconds
-population.add_reporter(neat.Checkpointer(25, 900,filename_prefix='checkpoints/quake3-checkpoint-'))
-stats = neat.StatisticsReporter()
-population.add_reporter(stats)
+if args.dry is False:
+    population.add_reporter(neat.StdOutReporter(True))
+    #Parameters is generations or seconds
+    population.add_reporter(neat.Checkpointer(25, 900,filename_prefix='checkpoints/quake3-checkpoint-'))
+    stats = neat.StatisticsReporter()
+    population.add_reporter(stats)
+    population.reporters.start_generation(population.generation)
 
 def exit_handler():
     print('Killing off subprocesses')
@@ -74,15 +78,16 @@ def exit_handler():
     print('Deleting pipes')
     for pipe in pipeNames:
         os.remove(pipe)
-    if population.generation > 5:
-        q3n.EndNEAT(population,stats,config)
+    if args.dry is False:
+        if population.generation > 5:
+            q3n.EndNEAT(population,stats,config)
 
 atexit.register(exit_handler)
-population.reporters.start_generation(population.generation)
+
 # MAIN
-if(args.dry == False):
+if args.dry is False:
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 900) else False)
+            pausing = (True if (iterations > 600) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:

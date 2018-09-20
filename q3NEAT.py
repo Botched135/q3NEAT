@@ -24,8 +24,11 @@ def RestoreFromCheckpoint(checkpoint):
 
 def Eval_Genomes(popIterator, fitnessParams, config):
     for fitness in fitnessParams:
+        try:
             genome = next(popIterator)
             genome.evaluateGenome(fitness)
+        except StopIteration:
+            pass
 
 def Activate_Genomes(popIterator,inputValues,config):
     outputList = []
@@ -34,7 +37,6 @@ def Activate_Genomes(popIterator,inputValues,config):
             genome = next(popIterator)
             outputList.append(genome.activate(tuple(_input[:-1]),config))
         except StopIteration:
-            print("Error with iterations")
             pass
     return outputList
 
@@ -114,6 +116,7 @@ def ActivationRun(pipeName,genome,config):
         NNOutputs = genome.activate(tuple(q3Data[0][:-1]),config)
         neatString = q3u.NEATDataToString(NNOutputs)
         combatState = q3Data[0][-1]
+        print(neatString)
 
     # WRITE TO Q3
     pipeOut = open(pipeName,'w')
@@ -178,16 +181,18 @@ def EndNEAT(pop, stats,config):
     winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
     q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness{0}.svg'.format(winnerName))
     q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species{0}.svg'.format(winnerName))
-    node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[RightBack]',-4:'enemyRadar[LeftBack]',
-                 -5:'enemyRadar[Right45ø]',-6:'enemyRadar[Left45ø]', -7:'enemyRadar[RightFront20ø]',-8:'enemyRadar[LeftFront20ø]',
-                 -9:'enemyRadar[RightFront15ø]',-10:'enemyRadar[LeftFront15ø]', -11:'enemyRadar[RightFront7.5ø]',-12:'enemyRadar[LeftFront7.5ø]',
-                 -13:'enemyRadar[RightFront2.5ø]',-14:'enemyRadar[LeftFront2.5ø]',-15:'enemyRadar[Front7Ø]',-16:'OnTarget',
-                0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right'}
+    node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[Front-15ø]',
+                 -4:'enemyRadar[1st-Right-12.5ø]', -5:'enemyRadar[1st-Left-12.5ø]',
+                 -6:'enemyRadar[2nd-Right-25ø]', -7:'enemyRadar[2nd-Left-25ø]',
+                 -8:'enemyRadar[3rd-Right-45ø]', -9:'enemyRadar[3rd-Left-45ø]',
+                 -10:'enemyRadar[Back-Right-90ø]', -11:'enemyRadar[Back-Left-90ø]',
+                 -12:'OnTarget',
+                  0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right'}
 
    
     winnerPath = "winnerGenomes/{0}".format(winnerName)
 
-    with open(winnerPath,'wb') as f:
+    with open(winnerName,'wb') as f:
         pickle.dump(winner,f)
 
     q3v.draw_net(config,winner,view=True,node_names=node_name,filename=winnerPath)
