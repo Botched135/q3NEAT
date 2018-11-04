@@ -3,4 +3,6 @@ Notes
 checkpoints
 visualizations
 winnerGenomes
-
+NodeJS/CSV/
+*.gv
+*.csv

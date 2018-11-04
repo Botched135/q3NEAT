@@ -14,7 +14,7 @@ const deviceID    = '5F04BC';
 
 //Generate name for csv-file --> REMEMBER TO WRITE 0 
 const csvEDA = "CSV/Participant"+participantID+"EDA.csv";
-const csvHR = "CSV/Participant"+participantID+"HR.csv";
+const csvBVP = "CSV/Participant"+participantID+"BVP.csv";
 
 // Create the two CSV streams
 var csvEDAStream = csv.format({headers: true,delimiter: ';'}),
@@ -24,29 +24,45 @@ writableEDAStream.on("finish", function(){
 });
 csvEDAStream.pipe(writableEDAStream);
 
-var csvHRStream = csv.format({headers: true,delimiter: ';'}),
-    writableHRStream = fs.createWriteStream(csvHR);
-writableHRStream.on("finish", function(){
-  console.log("Wrote to "+csvHR);
+var csvBVPStream = csv.format({headers: true,delimiter: ';'}),
+    writableBVPStream = fs.createWriteStream(csvBVP);
+writableBVPStream.on("finish", function(){
+  console.log("Wrote to "+csvBVP);
 });
-csvHRStream.pipe(writableHRStream);
+csvBVPStream.pipe(writableBVPStream);
 
 
 // Variables for the physiological inputs
 var dev1 = new EmpaticaE4();
 
-var PhysArray =[];
-var PhysTuple = '';
+var BVP_FullArray = [];
+var BVP_Array = [];
+var BVP_Tuple = ''
+
+var EDA_FullArray = []
+var EDA_Array =[];
+var EDA_Tuple = '';
 
 var inCombat = false;
 var initTime = "0";
+var currentTime = 0;
+var currentValue= 0;
 var sensorData = '';
-var currentHR = -1;
-var currentHRV = -1;
-var currentEDA = -1;
-var currentIBI = -1;
-var previousIBI = 0;
 
+function WriteToCSV(bvp,eda)
+{
+	bvp.forEach(function(entry)
+	{
+		csvBVPStream.write({BVP_Timestamp: entry[0], BVP: entry[1]})
+	});
+	csvBVPStream.end()
+
+	eda.forEach(function(entry)
+	{
+		csvEDAStream.write({EDA_Timestamp: entry[0],EDA: entry[1]});
+	});
+	csvEDAStream.end()
+}
 
 dev1.connect(portNumber ,ipAddress, deviceID, function(data){  
     sensorData = EmpaticaE4.getString(data);
@@ -64,23 +80,27 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 	if(initTime === "0")
 		initTime= parseFloat(split[1]);
 	
-	if(split[0] === "E4_Gsr")
+	currentTime = parseFloat(split[1])-initTime;
+	currentValue = parseFloat(split[2].replace(',','.')).toPrecision(8);
+
+	if(split[0] === "E4_Bvp")
+	{
+		BVP_Tuple = new Array(2);
+		BVP_Tuple[0] = currentTime;
+		BVP_Tuple[1] = currentValue;
+		BVP_Array.push(BVP_Tuple);
+
+	}
+	else if(split[0] === "E4_Gsr")
 	{		
-		currentEDA = parseFloat(split[2].replace(',','.')).toPrecision(8);
-		csvEDAStream.write({EDA_Timestamp: (parseFloat(split[1])-initTime),EDA: currentEDA.toPrecision(8)});
-		if(inCombat)
-		{
-			PhysTuple = new Array(4);
-		
-			PhysTuple[0] = currentEDA;
-			PhysTuple[1] = -1;
-			PhysTuple[2] = -1;
-			PhysTuple[3] = -1;
-			PhysArray.push(PhysTuple);
-		}
+		//csvEDAStream.write({EDA_Timestamp: (parseFloat(split[1])-initTime),EDA: currentEDA.toPrecision(8)});
+		EDA_Tuple = new Array(2);
+		EDA_Tuple[0] = currentTime;
+		EDA_Tuple[1] = currentValue;
+		EDA_Array.push(EDA_Tuple);
 
 	}	
-	else if(split[0] === "E4_Hr")
+	/*else if(split[0] === "E4_Hr")
 	{
 		currentHR = parseFloat(split[2].replace(',','.')).toPrecision(8);
 	}
@@ -102,14 +122,17 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 		}
 		
 		previousIBI=currentIBI;
-	}	
+	}	*/
 });
 setTimeout(function() {
-    dev1.subscribe(EmpaticaE4.E4_IBI);
+    dev1.subscribe(EmpaticaE4.E4_BVP);
 	dev1.subscribe(EmpaticaE4.E4_GSR);
-
 }, 1000);
 
+setTimeout(function()
+{
+	WriteToCSV(BVP_Array,EDA_Array);
+},10000)
 
 //UNIX SOCKET CONNECTION
 
@@ -133,18 +156,22 @@ const handler = (socket) =>
         else if(msg == "eval")
         {
         	var dataTransmission = "";
-			PhysArray.forEach(function(entry)
+			BVP_Array.forEach(function(entry)
 			{
-				for(var i = 0; i < 4;i++)
-				{
-					dataTransmission+=entry[i];
-					dataTransmission+=";";
-				}
-				dataTransmission+=":";
-				
+				dataTransmission+=entry[1];
+				dataTransmission+=";";
+				BVP_FullArray.push(entry)	
 			});
-			console.log(PhysArray.length);
-			PhysArray = [];
+			dataTransmission+= ":";
+
+			EDA_Array.forEach(function(entry)
+			{
+				dataTransmission+=entry[1];
+				dataTransmission+=";";	
+				EDA_FullArray.push(entry)
+			});
+			BVP_Array = [];
+			EDA_Tuple = [];
 			socket.write(dataTransmission);
 			inCombat = false;
         }

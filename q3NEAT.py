@@ -187,7 +187,7 @@ def EndNEAT(pop, stats,config):
                  -8:'enemyRadar[3rd-Right-45ø]', -9:'enemyRadar[3rd-Left-45ø]',
                  -10:'enemyRadar[Back-Right-90ø]', -11:'enemyRadar[Back-Left-90ø]',
                  -12:'OnTarget',
-                  0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right'}
+                  0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right', 3:'Negate Turn'}
 
    
     winnerPath = "winnerGenomes/{0}".format(winnerName)

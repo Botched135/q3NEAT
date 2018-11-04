@@ -8,7 +8,9 @@ import numpy as np
 from q3Genome import QuakeGenome
 import q3NEAT as q3n
 import q3Utilities as q3u
+import q3Affective as q3a
 import time
+
 
 parser = argparse.ArgumentParser()
 
@@ -26,26 +28,7 @@ parser.add_argument('--HRVBase', type=float, help='Heart Rate Variability baseli
 parser.add_argument('-s','--socket',type=str, help='Path to UNIX socket for physiological signals')
 
 args = parser.parse_args()
-
-def TransformAffectiveData(data):
-    PhysList = []
-    for x in range(4):
-        PhysList.append([])
-    data = data.replace(',','.')
-    dataList = data.split(':')
-    dataList = list(filter(None,dataList))
-    for dataSet in dataList:
-        splitList = dataSet.split(';')
-        splitList = list(filter(None,splitList))
-        numpyArray = np.array(splitList,dtype=float)
-        counter = 0;
-        for value in numpyArray:
-            if value != -1:
-                PhysList[counter].append(value)
-            counter+=1
-
-def EvaluateBiostate(PhysList, genomeList, currentGenomeID):
-    return 0
+baselineDict = {}
 
 def NonAffectiveRun(pipeName):
     pipeIn = open(pipeName,'r')
@@ -69,7 +52,7 @@ def ResolveCombatCommands(client, previousCombatState,botState):
     elif res == 3:
         client.send(b'eval')
         affectiveData = client.recv(66600).decode('utf-8')
-        TransformAffectiveData(affectiveData)
+        q3a.TransformAffectiveData(affectiveData)
     return res
 
 
@@ -79,6 +62,9 @@ pipeName = pipeName[0]
 
 if args.affective is True:
     combat = 0 #Three stages: 0: No change, 1: engaged in combat, 2: Combat ended, 3: Evaluation
+
+    # Baseline dict for parsing onto the affective evaluator
+    baselineDict = {'HR' : args.HRBase,'HRV' : args.HRVBase,'EDA' : args.EDABase}
 
     #UNIX socket client
     socketPath = args.socket

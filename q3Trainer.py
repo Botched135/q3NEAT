@@ -87,10 +87,11 @@ atexit.register(exit_handler)
 # MAIN
 if args.dry is False:
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 600) else False)
+            pausing = (True if (iterations > 400) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:
+
                 done = q3n.RunNEAT(population,config)
                 populationDict = population.population
                 keyIter = iter(populationDict.keys())
