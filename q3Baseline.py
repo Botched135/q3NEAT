@@ -1,4 +1,8 @@
 import numpy as np
+import heartbeat as hb
+import neurokit as nk
+import pandas as pandas
+import seaborn as sns
 from numpy import genfromtxt
 import argparse
 
@@ -13,32 +17,12 @@ if args.participantID is None:
 	raise SystemExit
 
 
-EDACsv = genfromtxt('NodeJS/CSV/Participant{0}EDA.csv'.format(args.participantID),delimiter=';')
-CardioCsv = genfromtxt('NodeJS/CSV/Participant{0}HR.csv'.format(args.participantID),delimiter=';')
-
-EDA_array, HR_array, IBI_array, HRV_array = [],[],[],[]
-
-for EDATuple in EDACsv[1:]:
-	EDA_array.append(EDATuple[1])
-
-EDA_array = np.array(EDA_array,dtype=float)
-
-for CardioTuple in CardioCsv[1:]:
-	HR_array.append(CardioTuple[1])
-	IBI_array.append(CardioTuple[2])
-	HRV_array.append(CardioTuple[3])
+BVP_numpy = genfromtxt('NodeJS/CSV/Participant{0}BVPBaseline.csv'.format(args.participantID),delimiter=';')
+EDA_df = pd.read_csv('NodeJS/CSV/Participant{0}EDABaseline.csv'.format(args.participantID),delimiter=';')
 
 
-HR_array = np.array(HR_array, dtype=float)
-IBI_array = np.array(IBI_array,dtype=float)
-HRV_array = np.array(HRV_array,dtype=float)
+measures = hb.process(BVP_numpy,64.0,report_time = True)
+processed_eda = nk.eda_process(EDA_df["EDA"],freq = 1.9, sampling_rate = 4);
 
-EDAMedian = np.median(EDA_array)
-HRMedian = np.median(HR_array)
-IBIMedian = np.median(IBI_array)
-HRVMedian = np.median(HRV_array)
-
-print("EDA Median: "+EDAMedian)
-print("HR Median: "+HRMedian)
-print("IBI Median: "+IBIMedian)
-print("HRV Median: "+HRVMedian)
+print("Average heartrate(BPM): {0}".format(measures['bpm']))
+print("Average HRV(RMSSD): {0} ".format(measures['rmssd']))

@@ -43,7 +43,7 @@ var EDA_FullArray = []
 var EDA_Array =[];
 var EDA_Tuple = '';
 
-var inCombat = false;
+var activeRecording = false;
 var initTime = "0";
 var currentTime = 0;
 var currentValue= 0;
@@ -71,6 +71,8 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 		console.log(sensorData)
 		return;
 	}
+	if(!activeRecording)
+		return;
 	
 	var replace = sensorData.replace("\r\n"," ");
 	
