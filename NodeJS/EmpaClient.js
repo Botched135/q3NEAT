@@ -131,11 +131,6 @@ setTimeout(function() {
 	dev1.subscribe(EmpaticaE4.E4_GSR);
 }, 1000);
 
-setTimeout(function()
-{
-	WriteToCSV(BVP_Array,EDA_Array);
-},10000)
-
 //UNIX SOCKET CONNECTION
 
 //Callback for Socket
@@ -147,13 +142,9 @@ const handler = (socket) =>
         const msg = bytes.toString();
 
         console.log(msg)
-        if(msg == "combat")
+        if(msg == "Q3Connected")
         {
-        	inCombat = true;
-        }
-        else if(msg == "end")
-        {
-        	inCombat = false;
+        	activeRecording = true;
         }
         else if(msg == "eval")
         {
@@ -175,7 +166,10 @@ const handler = (socket) =>
 			BVP_Array = [];
 			EDA_Tuple = [];
 			socket.write(dataTransmission);
-			inCombat = false;
+        }
+        else if(msg == "end")
+        {
+        	WriteToCSV(BVP_FullArray,EDA_FullArray)
         }
     });
 };

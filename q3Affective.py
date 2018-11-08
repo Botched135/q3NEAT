@@ -24,7 +24,7 @@ def TransformAffectiveData(stringData):
 	return BVP_array, EDA_List
 
 # BVP needs to be numpy, while EDA needs to be standard array or list
-def EvaluateBiostate(BVP_array, EDA_array, genomeList, currentGenomeID, baselineDict):
+def EvaluateNEATBiostate(BVP_array, EDA_array, genomeList, currentGenomeID, baselineDict):
 
 	hb_measure = hb.process(BVP_array,64.0,report_time = True)
 	processed_eda = nk.eda_process(EDA_array, freq= 1.9,sampling_rate=4)
@@ -32,6 +32,14 @@ def EvaluateBiostate(BVP_array, EDA_array, genomeList, currentGenomeID, baseline
 
 	#Do the evaluation stuff
 	return 0
+
+def EvaluateAdaptiveBiostate(BVP_array, EDA_array, baselineDict):
+	hb_measure = hb.process(BVP_array,64.0,report_time = True)
+	processed_eda = nk.eda_process(EDA_array, freq= 1.9,sampling_rate=4)
+
+	#Do the evaluation stuff 
+	return 0;
+	
 
 
 # Debugging

@@ -44,7 +44,6 @@ def ConvertArrayToTuple(array):
 def SetupPipes(servers,pipe_path):
     resList = []
     path = os.path.expanduser(pipe_path)
-    print(path)
     if not os.path.exists(path):
         os.mkdir(path)
         print('Created pipe folder')

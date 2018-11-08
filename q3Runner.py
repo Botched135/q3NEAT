@@ -30,33 +30,37 @@ parser.add_argument('-s','--socket',type=str, help='Path to UNIX socket for phys
 args = parser.parse_args()
 baselineDict = {}
 
-def NonAffectiveRun(pipeName):
+def UpdateNEAT(evaluationResult,genomeList, newGenomeID):
+    return 0;
+
+def NonAdamAffectiveRun(pipeName, update_val):
     pipeIn = open(pipeName,'r')
     pipeIn.read()
     pipeIn.close()
 
     # WRITE IF THERE SHOULD BE UPDATE
+    updateString = str(update_val)
     pipeOut = open(pipeName,'w')
-    pipeOut.write('1')
+    pipeOut.write(updateString)
     pipeOut.close()
 
+def EvaluateBiodata(client,baselineDict):
+    client.send(b'eval')
+    affectiveData = client.recv(66600).decode('utf-8')
+    BVP, EDA = q3a.TransformAffectiveData(affectiveData)
+    return q3a.EvaluateAdaptiveBiostate(BVP,EDA,baselineDict)
 
-def ResolveCombatCommands(client, previousCombatState,botState):
-    res = botState;
-    if res == previousCombatState:
-        return res;
-    if res == 1:
-    	client.send(b'combat')
-    elif res == 2:
-    	client.send(b'end')
-    elif res == 3:
-        client.send(b'eval')
-        affectiveData = client.recv(66600).decode('utf-8')
-        q3a.TransformAffectiveData(affectiveData)
-    return res
+def EvaluateNEATBiodata(client, genomeList, currentGenomeID,baselineDict):
+    client.send(b'eval')
+    affectiveData = client.recv(66600).decode('utf-8')
+    BVP, EDA = q3a.TransformAffectiveData(affectiveData)
+    evaluationResult = q3a.EvaluateAdaptiveBiostate(BVP, EDA, genomeList, currentGenomeID, baselineDict)
+    newGenomeID = 0;
+    return newGenomeID #Needs to return what next genome id 
 
 
 botCfgPrefix = 'nonAdam'
+
 pipeName = q3u.SetupPipes(1,args.pipePath)
 pipeName = pipeName[0]
 
@@ -70,7 +74,7 @@ if args.affective is True:
     socketPath = args.socket
     client= socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
     client.connect(socketPath)
-    client.send(b'Q3Runner connected')
+    client.send(b'Q3Connected')
 
 if args.NEAT is True:
     botCfgPrefix = 'adam'
@@ -93,16 +97,31 @@ def exit_handler():
     pOpen.kill()
     print('Deleting pipes')
     os.remove(pipeName)
+    client.send(b'end')
     client.disconnect()
-    
+
+iterations = 0  
 #Evaluate combat based
-while True:
-    if args.NEAT is True:
-        state = q3n.ActivationRun(pipeName,genome,config)
-        if args.affective is True:
-            combat = ResolveCombatCommands(client,combat,state)
-    else:
-        NonAffectiveRun(pipeName)
+if args.affective is True:
+    while True:
+        if args.NEAT is True:
+            if iterations > 1200:
+                iterations = 0
+                evalResult = EvaluateNEATBiodata(client)
+                genome = UpdateNEAT(evalResult)
+
+            q3n.ActivationRun(pipeName,genome,config)
+
+        else:
+            update_val = 0
+            if iterations > 1200:
+                iterations = 0
+                update_val = EvaluateBiodata(client,baselineDict)            
+
+            NonAdamAffectiveRun(pipeName, update_val)
+elif args.NEAT is True:
+    while True: 
+        q3n.ActivationRun(pipeName,genome,config)
 
 if __name__ == '__main__':
     pOpen.wait()

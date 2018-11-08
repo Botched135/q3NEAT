@@ -127,8 +127,3 @@ setTimeout(function() {
 	dev1.subscribe(EmpaticaE4.E4_GSR);
 	
 }, 10000);
-
-
-
-
-// Make the audio player play Morning Walk
