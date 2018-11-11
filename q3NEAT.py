@@ -116,7 +116,6 @@ def ActivationRun(pipeName,genome,config):
         NNOutputs = genome.activate(tuple(q3Data[0][:-1]),config)
         neatString = q3u.NEATDataToString(NNOutputs)
         combatState = q3Data[0][-1]
-        print(neatString)
 
     # WRITE TO Q3
     pipeOut = open(pipeName,'w')
