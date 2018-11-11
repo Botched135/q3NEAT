@@ -46,7 +46,7 @@ var EDA_FullArray = []
 var EDA_Array =[];
 var EDA_Tuple = '';
 
-var initTime = "0";
+var initTime = 0;
 var currentTime = 0;
 var currentValue= 0;
 var sensorData = '';
@@ -83,6 +83,7 @@ load('./Music/MorningWalk.mp3',(err,buff) => {
 
 dev1.connect(portNumber ,ipAddress, deviceID, function(data){  
     sensorData = EmpaticaE4.getString(data);
+
 	if(sensorData[0] === 'R')
 	{
 		console.log(sensorData)
@@ -94,17 +95,39 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 		player.play();
 		activeRecording = true;
 	}
-	var replace = sensorData.replace("\r\n"," ");
-	
-	replace = replace.replace(',','.');
-	var split = replace.split(" ");
+	var dataTuple = sensorData.split("\r\n")
+	dataTuple.forEach(function(element)
+	{
+		var dataPoint = element.split(" ")
+		currentTime = (parseFloat(dataPoint[1])-initTime).toPrecision(10)
+		currentValue = parseFloat(dataPoint[2].replace(',','.')).toPrecision(10)
+		if(dataPoint[0] === "E4_Bvp")
+		{
+			BVP_Tuple = new Array(2);
+			BVP_Tuple[0] = currentTime;
+			BVP_Tuple[1] = currentValue;
+			BVP_Array.push(BVP_Tuple);
+		}
+		else if(dataPoint[0] === "E4_Gsr")
+		{		
 
-	if(initTime === "0")
-		initTime= parseFloat(split[1]);
+			EDA_Tuple = new Array(2);
+			EDA_Tuple[0] = currentTime;
+			EDA_Tuple[1] = currentValue;
+			EDA_Array.push(EDA_Tuple);
+		}
+	});
+	/*
 	
+	
+	try{
 	currentTime = parseFloat(split[1])-initTime;
 	currentValue = parseFloat(split[2].replace(',','.')).toPrecision(8);
-
+	}
+	catch(err)
+	{
+		console.log(split)
+	}
 	if(split[0] === "E4_Bvp")
 	{
 		BVP_Tuple = new Array(2);
@@ -115,15 +138,16 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 	}
 	else if(split[0] === "E4_Gsr")
 	{		
+
 		EDA_Tuple = new Array(2);
 		EDA_Tuple[0] = currentTime;
 		EDA_Tuple[1] = currentValue;
 		EDA_Array.push(EDA_Tuple);
 
-	}	
+	}	*/
 });
 setTimeout(function() {
-    dev1.subscribe(EmpaticaE4.E4_BVP);
 	dev1.subscribe(EmpaticaE4.E4_GSR);
-	
-}, 10000);
+    dev1.subscribe(EmpaticaE4.E4_BVP);
+    initTime = Date.now()/1000
+}, 5000);

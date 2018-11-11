@@ -71,60 +71,31 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 		console.log(sensorData)
 		return;
 	}
+	
 	if(!activeRecording)
 		return;
-	
-	var replace = sensorData.replace("\r\n"," ");
-	
-	replace = replace.replace(',','.');
-	var split = replace.split(" ");
 
-	if(initTime === "0")
-		initTime= parseFloat(split[1]);
-	
-	currentTime = parseFloat(split[1])-initTime;
-	currentValue = parseFloat(split[2].replace(',','.')).toPrecision(8);
-
-	if(split[0] === "E4_Bvp")
+	var dataTuple = sensorData.split("\r\n")
+	dataTuple.forEach(function(element)
 	{
-		BVP_Tuple = new Array(2);
-		BVP_Tuple[0] = currentTime;
-		BVP_Tuple[1] = currentValue;
-		BVP_Array.push(BVP_Tuple);
-
-	}
-	else if(split[0] === "E4_Gsr")
-	{		
-		//csvEDAStream.write({EDA_Timestamp: (parseFloat(split[1])-initTime),EDA: currentEDA.toPrecision(8)});
-		EDA_Tuple = new Array(2);
-		EDA_Tuple[0] = currentTime;
-		EDA_Tuple[1] = currentValue;
-		EDA_Array.push(EDA_Tuple);
-
-	}	
-	/*else if(split[0] === "E4_Hr")
-	{
-		currentHR = parseFloat(split[2].replace(',','.')).toPrecision(8);
-	}
-	else if(split[0] === "E4_Ibi")
-	{
-		currentIBI = parseFloat(split[2].replace(',','.')).toPrecision(8);
-		currentHRV = previousIBI > 0 ? Math.abs(currentIBI-previousIBI) : -1;
-		csvHRStream.write({HR_Timestamp: (parseFloat(split[1])-initTime),HR:currentHR, IBI:currentIBI, HRV: currentHRV});
-		
-		if(inCombat)
+		var dataPoint = element.split(" ")
+		currentTime = (parseFloat(dataPoint[1])-initTime).toPrecision(10)
+		currentValue = parseFloat(dataPoint[2].replace(',','.')).toPrecision(10)
+		if(dataPoint[0] === "E4_Bvp")
 		{
-			PhysTuple = new Array(4);
-		
-			PhysTuple[0] = -1;
-			PhysTuple[1] = currentHR;
-			PhysTuple[2] = currentIBI;
-			PhysTuple[3] = currentHRV
-			PhysArray.push(PhysTuple);
+			BVP_Tuple = new Array(2);
+			BVP_Tuple[0] = currentTime;
+			BVP_Tuple[1] = currentValue;
+			BVP_Array.push(BVP_Tuple);
 		}
-		
-		previousIBI=currentIBI;
-	}	*/
+		else if(dataPoint[0] === "E4_Gsr")
+		{		
+
+			EDA_Tuple = new Array(2);
+			EDA_Tuple[0] = currentTime;
+			EDA_Tuple[1] = currentValue;
+			EDA_Array.push(EDA_Tuple);
+		}
 });
 setTimeout(function() {
     dev1.subscribe(EmpaticaE4.E4_BVP);

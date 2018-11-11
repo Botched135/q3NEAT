@@ -374,7 +374,6 @@ def fit_peaks(hrdata, rol_mean, sample_rate, bpmmin=40, bpmmax=180):
         if (_rrsd > 0.1) and ((bpmmin <= _bpm <= bpmmax)):
             valid_ma.append([_rrsd, _ma_perc])
 
-
     working_data['best'] = min(valid_ma, key=lambda t: t[0])[1]
     detect_peaks(hrdata, rol_mean, min(valid_ma, key=lambda t: t[0])[1], sample_rate)
 
