@@ -1,6 +1,6 @@
 [NEAT]
 fitness_criterion     = max
-fitness_threshold     = 60.0
+fitness_threshold     = 10.0
 pop_size              = 180
 reset_on_extinction   = False
 
@@ -8,7 +8,7 @@ reset_on_extinction   = False
 num_inputs              = 12
 num_hidden              = 0
 num_outputs             = 4
-initial_connection      = partial_direct 0.6 
+initial_connection      = full_direct
 
 feed_forward            = True
 compatibility_disjoint_coefficient = 1.0
@@ -112,8 +112,8 @@ compatibility_threshold = 2.5
 
 [DefaultStagnation]
 species_fitness_func = mean
-max_stagnation       = 20
-species_elitism      = 2
+max_stagnation       = 25
+species_elitism      = 1
 
 [DefaultReproduction]
 elitism            = 2

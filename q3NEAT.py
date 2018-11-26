@@ -5,6 +5,7 @@ import q3Utilities as q3u
 import q3Visualize as q3v
 import time
 import datetime
+import os
 from neat.six_util import iteritems, itervalues
 
 class CompleteExtinctionException(Exception):
@@ -178,6 +179,7 @@ def RunNEAT(pop,config):
 def EndNEAT(pop, stats,config):
     winner = pop.best_genome
     winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
+    winnerFolder = "Time{1}Generation{0}/".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
     q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness{0}.svg'.format(winnerName))
     q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species{0}.svg'.format(winnerName))
     node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[Front-15ø]',
@@ -189,12 +191,27 @@ def EndNEAT(pop, stats,config):
                   0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right', 3:'Negate Turn'}
 
    
-    winnerPath = "winnerGenomes/{0}".format(winnerName)
+    winnerPath = "winnerGenomes/{0}".format(winnerFolder)
 
-    with open(winnerName,'wb') as f:
-        pickle.dump(winner,f)
+    if not os.path.exists(winnerPath):
+        os.makedirs(winnerPath)
 
-    q3v.draw_net(config,winner,view=True,node_names=node_name,filename=winnerPath)
+    _species = pop.species.species
+
+    for speciesKey in _species:
+        genomes = _species[speciesKey].members
+        localBest = None
+        localBestPath = ""
+        for genomeKey in genomes:
+            genome = genomes[genomeKey]
+            if localBest is None or localBest.fitness < genome.fitness:
+                localBest = genome
+        if(localBest.fitness > 5):
+            localBestPath = "{0}Specie{1}Fitness{2}.gv".format(winnerPath,speciesKey,localBest.fitness)
+
+            with open(localBestPath,'wb') as f:
+                pickle.dump(localBest,f)
+            q3v.draw_net(config,localBest,view=True,node_names=node_name,filename=localBestPath)
 
 
 #0:'Shoot',1:'Jump/Crouch',2:'Move Forward/Backward',3:'Move Left/Right',4:'Turn Left/Right'} ,-22:'Health',-23:'TakingDmg'

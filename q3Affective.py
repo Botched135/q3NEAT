@@ -1,4 +1,4 @@
-import heartbeat as hb
+import heartpy as hb
 import neurokit as nk
 import numpy as np
 import pandas as pd
@@ -26,7 +26,8 @@ def TransformAffectiveData(stringData):
 # BVP needs to be numpy, while EDA needs to be standard array or list
 def EvaluateNEATBiostate(BVP_array, EDA_array, genomeList, currentGenomeID, baselineDict):
 
-	hb_measure = hb.process(BVP_array,64.0,report_time = True)
+	working_data, hb_measure = hb.process(BVP_array,64.0,report_time = True)
+
 	processed_eda = nk.eda_process(EDA_array, freq= 1.9,sampling_rate=4)
 	
 
@@ -34,8 +35,11 @@ def EvaluateNEATBiostate(BVP_array, EDA_array, genomeList, currentGenomeID, base
 	return 0
 
 def EvaluateAdaptiveBiostate(BVP_array, EDA_array, baselineDict):
-	hb_measure = hb.process(BVP_array,64.0,report_time = True)
+	working_data, hb_measure = hb.process(BVP_array,64.0,report_time = True)
+	#TODO: Test the difference between resting and playing against the easiest possible character
+	# High heart rate and high HRV = decrease level 
 	processed_eda = nk.eda_process(EDA_array, freq= 1.9,sampling_rate=4)
+	# How do we go about with eda? 
 
 	#Do the evaluation stuff 
 	return 0;

@@ -22,10 +22,8 @@ parser.add_argument('-gF','--genomeFolder', type=str, help='path to the folder c
 parser.add_argument('-ag','--activeGenomePath', type=str,help='path to genome that will control the agent initially')
 parser.add_argument('--affective',action='store_true', help='Whether or not the affective version should run')
 parser.add_argument('--NEAT', action='store_true',help='Whehter to use the NEAT-AI or the built-in bots')
-parser.add_argument('--HRBase', type=float, help='Heart Rate (BPM) baseline of the participant')
-parser.add_argument('--EDABase', type=float, help='Electrodermal Activity baseline of the participant')
-parser.add_argument('--HRVBase', type=float, help='Heart Rate Variability baseline of the participant')
 parser.add_argument('-s','--socket',type=str, help='Path to UNIX socket for physiological signals')
+parser.add_argument('-ID','--participantID',type=int, help='ID of the player. Used to load baseline')
 
 args = parser.parse_args()
 baselineDict = {}
@@ -63,12 +61,16 @@ botCfgPrefix = 'nonAdam'
 
 pipeName = q3u.SetupPipes(1,args.pipePath)
 pipeName = pipeName[0]
+baselineDict = {}
 
 if args.affective is True:
     combat = 0 #Three stages: 0: No change, 1: engaged in combat, 2: Combat ended, 3: Evaluation
 
     # Baseline dict for parsing onto the affective evaluator
-    baselineDict = {'HR' : args.HRBase,'HRV' : args.HRVBase,'EDA' : args.EDABase}
+    # Load pickled files
+    base_path = "BaselineData/Participant{0}/".format(args.participantID)
+    baselineDict['HR'] = pickle.load(open('{0}HRBase'.format(base_path),'rb'))
+    baselineDict['EDA'] = pickle.load(open('{0}EDABase'.format(base_path),'rb'))
 
     #UNIX socket client
     socketPath = args.socket
@@ -105,7 +107,7 @@ iterations = 0
 if args.affective is True:
     while True:
         if args.NEAT is True:
-            if iterations > 1200:
+            if iterations > 12000:
                 iterations = 0
                 evalResult = EvaluateNEATBiodata(client)
                 genome = UpdateNEAT(evalResult)

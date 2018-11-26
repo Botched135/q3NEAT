@@ -99,8 +99,16 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 	dataTuple.forEach(function(element)
 	{
 		var dataPoint = element.split(" ")
+		try{
 		currentTime = (parseFloat(dataPoint[1])-initTime).toPrecision(10)
 		currentValue = parseFloat(dataPoint[2].replace(',','.')).toPrecision(10)
+		}
+		catch(err)
+		{	
+			console.log(dataTuple)
+			console.log(dataPoint)
+			return
+		}
 		if(dataPoint[0] === "E4_Bvp")
 		{
 			BVP_Tuple = new Array(2);
@@ -117,34 +125,6 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 			EDA_Array.push(EDA_Tuple);
 		}
 	});
-	/*
-	
-	
-	try{
-	currentTime = parseFloat(split[1])-initTime;
-	currentValue = parseFloat(split[2].replace(',','.')).toPrecision(8);
-	}
-	catch(err)
-	{
-		console.log(split)
-	}
-	if(split[0] === "E4_Bvp")
-	{
-		BVP_Tuple = new Array(2);
-		BVP_Tuple[0] = currentTime;
-		BVP_Tuple[1] = currentValue;
-		BVP_Array.push(BVP_Tuple);
-
-	}
-	else if(split[0] === "E4_Gsr")
-	{		
-
-		EDA_Tuple = new Array(2);
-		EDA_Tuple[0] = currentTime;
-		EDA_Tuple[1] = currentValue;
-		EDA_Array.push(EDA_Tuple);
-
-	}	*/
 });
 setTimeout(function() {
 	dev1.subscribe(EmpaticaE4.E4_GSR);

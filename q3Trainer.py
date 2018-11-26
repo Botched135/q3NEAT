@@ -54,7 +54,6 @@ elif args.dry is False:
 
 #for indexer in np.nditer(indicers, op_flags=['writeonly']):
  #   indexer[...] = next(keyIter)
-
 #Open servers
 for pipePath in pipeNames:
     _pipe = '+pipe={0}'.format(pipePath);
@@ -62,7 +61,7 @@ for pipePath in pipeNames:
     pOpens.append(subprocess.Popen(params))
 
 #Setup NEAT-reporter
-#Parameter is whether or not to show speices details
+#Parameter is whether or not to show species details
 if args.dry is False:
     population.add_reporter(neat.StdOutReporter(True))
     #Parameters is generations or seconds
@@ -87,7 +86,7 @@ atexit.register(exit_handler)
 # MAIN
 if args.dry is False:
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 400) else False)
+            pausing = (True if (iterations > 500) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:
