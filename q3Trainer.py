@@ -33,6 +33,9 @@ args = parser.parse_args()
 pausing = False
 
 pipeNames = q3u.SetupPipes(args.servers,args.pipePath)
+cfgPrefix = ""
+if args.dry is True:
+    cfgPrefix = 'debug'
 
 if args.init is True:
     if args.checkpoint is not None:
@@ -57,7 +60,7 @@ elif args.dry is False:
 #Open servers
 for pipePath in pipeNames:
     _pipe = '+pipe={0}'.format(pipePath);
-    params = ("xterm","-hold","-e",args.sPath,"+exec","server.cfg","+exec","levels.cfg","+exec","bots.cfg",_pipe)
+    params = ("xterm","-hold","-e",args.sPath,"+exec","{0}server.cfg".format(cfgPrefix),"+exec","levels.cfg","+exec","{0}bots.cfg".format(cfgPrefix),_pipe)
     pOpens.append(subprocess.Popen(params))
 
 #Setup NEAT-reporter
@@ -85,8 +88,10 @@ atexit.register(exit_handler)
 
 # MAIN
 if args.dry is False:
+    #So rather than simply using ready for switch a-roo, it will be used to choose if the next generetation should start
+    #Example: Bots runs a test --> All Bots are done --> next frame it checks if all the bots are done --> sends note to python to
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 500) else False)
+            pausing = (True if (iterations > 1200 ) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:

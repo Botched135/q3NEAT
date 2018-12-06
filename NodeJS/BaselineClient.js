@@ -71,7 +71,7 @@ load('./Music/MorningWalk.mp3',(err,buff) => {
 	player = play(buff,
 	{
 		start: 1.0,
-		end: buff.duration,
+		end: 61.0,//buff.duration,
 		volume: 1.0,
 		loop: false,
 		autoplay: false

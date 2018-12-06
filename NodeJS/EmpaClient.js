@@ -13,8 +13,8 @@ const participantID = args[2];
 const deviceID    = '5F04BC';  
 
 //Generate name for csv-file --> REMEMBER TO WRITE 0 
-const csvEDA = "CSV/Participant"+participantID+"EDA.csv";
-const csvBVP = "CSV/Participant"+participantID+"BVP.csv";
+const csvEDA = "CSV/Participant"+participantID+"EDATest.csv";
+const csvBVP = "CSV/Participant"+participantID+"BVPTest.csv";
 
 // Create the two CSV streams
 var csvEDAStream = csv.format({headers: true,delimiter: ';'}),
@@ -64,7 +64,8 @@ function WriteToCSV(bvp,eda)
 	csvEDAStream.end()
 }
 
-dev1.connect(portNumber ,ipAddress, deviceID, function(data){  
+dev1.connect(portNumber ,ipAddress, deviceID, function(data)
+{  
     sensorData = EmpaticaE4.getString(data);
 	if(sensorData[0] === 'R')
 	{
@@ -96,7 +97,9 @@ dev1.connect(portNumber ,ipAddress, deviceID, function(data){
 			EDA_Tuple[1] = currentValue;
 			EDA_Array.push(EDA_Tuple);
 		}
+	});
 });
+
 setTimeout(function() {
     dev1.subscribe(EmpaticaE4.E4_BVP);
 	dev1.subscribe(EmpaticaE4.E4_GSR);
@@ -116,6 +119,10 @@ const handler = (socket) =>
         if(msg == "Q3Connected")
         {
         	activeRecording = true;
+        	BVP_Array = []
+        	EDA_Array = [] 
+        	EDA_FullArray = []
+        	BVP_FullArray = []
         }
         else if(msg == "eval")
         {
@@ -135,7 +142,7 @@ const handler = (socket) =>
 				EDA_FullArray.push(entry)
 			});
 			BVP_Array = [];
-			EDA_Tuple = [];
+			EDA_Array = [];
 			socket.write(dataTransmission);
         }
         else if(msg == "end")

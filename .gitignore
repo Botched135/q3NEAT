@@ -4,5 +4,6 @@ checkpoints
 visualizations
 winnerGenomes
 NodeJS/CSV/
+BaselineData/
 *.gv
 *.csv
