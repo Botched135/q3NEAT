@@ -180,8 +180,14 @@ def EndNEAT(pop, stats,config):
     winner = pop.best_genome
     winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
     winnerFolder = "Time{1}Generation{0}/".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
-    q3v.plot_stats(stats, ylog=True, view=True,filename='visualizations/q3-fitness{0}.svg'.format(winnerName))
-    q3v.plot_species(stats, view = True, filename = 'visualizations/q3-species{0}.svg'.format(winnerName))
+
+    winnerPath = "winnerGenomes/{0}".format(winnerFolder)
+    if not os.path.exists(winnerPath):
+        os.makedirs(winnerPath)
+        os.makedirs("{0}visualizations/".format(winnerPath))
+
+    q3v.plot_stats(stats, ylog=True, view=True,filename='{0}visualizations/q3-fitness{1}.svg'.format(winnerPath,winnerName))
+    q3v.plot_species(stats, view = True, filename = '{0}visualizations/q3-species{1}.svg'.format(winnerPath, winnerName))
     node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[Front-15ø]',
                  -4:'enemyRadar[1st-Right-12.5ø]', -5:'enemyRadar[1st-Left-12.5ø]',
                  -6:'enemyRadar[2nd-Right-25ø]', -7:'enemyRadar[2nd-Left-25ø]',
@@ -197,7 +203,7 @@ def EndNEAT(pop, stats,config):
         os.makedirs(winnerPath)
 
     _species = pop.species.species
-
+    
     for speciesKey in _species:
         genomes = _species[speciesKey].members
         localBest = None
@@ -206,12 +212,13 @@ def EndNEAT(pop, stats,config):
             genome = genomes[genomeKey]
             if localBest is None or localBest.fitness < genome.fitness:
                 localBest = genome
-        if(localBest.fitness > 5):
-            localBestPath = "{0}Specie{1}Fitness{2}.gv".format(winnerPath,speciesKey,localBest.fitness)
+        if(localBest.fitness > 3):
+            localBestPath = "{0}Specie{1}Fitness{2}".format(winnerPath,speciesKey,localBest.fitness)
 
             with open(localBestPath,'wb') as f:
                 pickle.dump(localBest,f)
-            q3v.draw_net(config,localBest,view=True,node_names=node_name,filename=localBestPath)
+            
+            q3v.draw_net(config,localBest,view=True,node_names=node_name,filename="{0}Network".format(localBestPath))
 
 
 #0:'Shoot',1:'Jump/Crouch',2:'Move Forward/Backward',3:'Move Left/Right',4:'Turn Left/Right'} ,-22:'Health',-23:'TakingDmg'

@@ -42,6 +42,7 @@ hb_measures = None
 EDA_measures = None
 
 levelStatesList = []
+progressionStateList =[]
 
 
 #AFFECTIVE (so much easier than making individual module)
@@ -66,6 +67,8 @@ m_REVERT = -1
 m_STAY = 0
 m_INCREASE = 1
 m_DECREASE = 2
+m_Iteration = 0
+
 
 p_value = 0.05
 percentage_change = 1.15
@@ -98,10 +101,13 @@ def SetupBaseline(baselineDict):
     global m_prevLevel
     global m_curLevel
     global levelStatesList
+    global progressionStateList
 
     for x in range(5):
-        levelDic = {'HR_mean': None, 'HRV' : None, 'Tonic_mean' : None, 'Ṕhasic_mean' : None}
+        levelDic = {'HR_mean': None, 'HRV' : None, 'Tonic_mean' : None, 'Phasic_mean' : None}
         levelStatesList.append(levelDic)
+        progDic = {'Level': None,'HR_mean': None, 'HRV' : None, 'Tonic_mean' : None, 'Phasic_mean' : None}
+        progressionStateList.append(progDic)
 
     
     hb_measures= baselineDict['HR']['measures']
@@ -146,6 +152,8 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
     global m_lastAction
 
     global levelStatesList
+    global progressionStateList
+    global m_Iteration
     #1: higher arousal
     #0: no notificable change 
     #-1: lower arousal
@@ -209,13 +217,18 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
     elif hrv_state == 1:
         prev_hrv_state = m_previousHRV
         if prev_hrv_state > current_HRV*percentage_change:
-            hr_rate = 1
-        elif current_HRV < m_previousHRV*percentage_change:
+            hrv_rate = 1
+        elif current_HRV > m_previousHRV*percentage_change:
             hrv_rate = -1
         else:
             hrv_rate = 0
     else:
-        hrv_rate = -1 if current_HRV > m_baseHRV*percentage_change and current_HRV< 130 else 0
+        if current_HRV > m_previousHRV*percentage_change:
+            hrv_rate = -1
+        elif current_HRV*percentage_change < m_previousHRV:
+            hrv_rate = 1
+        else:
+            hrv_rate = -1 if current_HRV > m_baseHRV*percentage_change else 0
 
     #EDA Tonic
 
@@ -274,12 +287,15 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
             if m_curLevel ==1:
                 result = 0
                 m_lastAction = m_STAY
-            elif levelStatesList[m_curLevel-1]['HR_mean'] is None:
+            elif levelStatesList[m_curLevel-2]['HR_mean'] is None:
                 result = -1
                 m_lastAction = m_DECREASE
             else: 
-                lowerAffectiveState = ((1 if levelStatesList[m_curLevel-1]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel-1]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel-1]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel-1]['Phasic_mean'] < current_Phasic_mean else 0))/4
-                if lowerAffectiveState > 0.5:
+                lowerAffectiveState = ((1 if levelStatesList[m_curLevel-2]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel-2]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel-2]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel-2]['Phasic_mean'] < current_Phasic_mean else 0))/4
+                if levelStatesList[m_curLevel-2]['HR_mean'] is None:
+                    result = -1
+                    m_lastAction =  m_DECREASE
+                elif lowerAffectiveState > 0.5:
                     result = -1
                     m_lastAction = m_DECREASE
                 else:
@@ -289,13 +305,13 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
             if m_curLevel == 5:
                 result =0
                 m_lastAction = m_STAY
-            elif levelStatesList[m_curLevel+1]['HR_mean'] is None:
+            elif levelStatesList[m_curLevel]['HR_mean'] is None:
                 result = 1
                 m_lastAction = m_INCREASE
             else: 
-                upperAffectiveState = ((1 if levelStatesList[m_curLevel+1]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel+1]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel+1]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel+1]['Phasic_mean'] < current_Phasic_mean else 0))/4
+                upperAffectiveState = ((1 if levelStatesList[m_curLevel]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel]['Phasic_mean'] < current_Phasic_mean else 0))/4
                 if upperAffectiveState > 0.5:
-                    if hr_rate == -1:
+                    if hrv_rate == -1:
                         result = -1
                         m_lastAction = m_DECREASE
                     else:
@@ -305,34 +321,50 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
                     result = 0
                     m_lastAction = m_STAY
         else: 
-            result = 0
-            m_lastAction = m_STAY
-        elif hrv_rate == -1:
-            result = -1
-            m_lastAction = m_DECREASE
-        else: # Here I should check the other levels
-            result = 1
-            m_lastAction = m_INCREASE
-            #
+            if hrv_rate == -1:
+                result = -1
+                m_lastAction = m_DECREASE
+            elif hrv_rate == 0:
+                result = 0
+                m_lastAction = m_STAY
+            else:
+                result = 1
+                m_lastAction = m_INCREASE
     # significant lower arousal -- SHOULD NOT STAY
     elif ((phasic_rate+tonic_rate+hr_rate)/3.0) <0.0:
         #REVERT!
-        result = m_prevLevel-m_curLevel
-        if m_curLevel == 1
+        if m_curLevel == 1:
             result = 1
             m_lastAction = m_INCREASE
         elif m_curLevel == 5:
             result = -1
             m_lastAction = m_DECREASE
-        elif result <= 0:
+        elif m_lastAction == m_DECREASE:
+            result = 1
+            m_lastAction = m_INCREASE
+        elif m_lastAction == m_INCREASE:
             result = -1
             m_lastAction = m_DECREASE
         else:
-            result = 1
-            m_lastAction = m_INCREASE  
+            upperAffectiveState = ((1 if levelStatesList[m_curLevel]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel]['Phasic_mean'] < current_Phasic_mean else 0))/4
+            lowerAffectiveState = ((1 if levelStatesList[m_curLevel-2]['HR_mean'] < current_HR else 0) + (1 if levelStatesList[m_curLevel-2]['HRV'] > current_HRV else 0) + (1 if levelStatesList[m_curLevel-2]['Tonic_mean'] < current_Tonic_mean else 0) + (1 if levelStatesList[m_curLevel-2]['Phasic_mean'] < current_Phasic_mean else 0))/4
+            if upperAffectiveState > 0.5:
+                m_lastAction = m_DECREASE
+                result = -1
+            elif lowerAffectiveState > 0.5:
+                m_lastAction = m_INCREASE
+                result = 1
+            else:
+                m_lastAction = m_DECREASE
+                result = -1
+
+
     #No real change between this and the previous, do the same action again
     else:
-        if m_curLevel == 1:
+        if m_previousPhasic is None:
+            result = 1
+            m_lastAction = m_INCREASE
+        elif m_curLevel == 1:
             result = 1
             m_lastAction = m_INCREASE
         elif m_curLevel == 5:
@@ -344,6 +376,7 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
             result = 1
         else:
             result = 0
+            m_lastAction = m_STAY
 
     #Finish off
 
@@ -361,12 +394,21 @@ def EvaluateAdaptiveBiostate(BVP_array = None, EDA_array = None):
     levelStatesList[m_prevLevel-1]['HR_mean'] = m_previousHR
     levelStatesList[m_prevLevel-1]['HRV'] = m_previousHRV
 
+    progressionStateList[m_Iteration]['HR_mean'] = m_previousHR
+    progressionStateList[m_Iteration]['HRV'] = m_previousHRV
+
     m_previousTonic = current_Tonic
     m_previousPhasic = current_Phasic
 
     levelStatesList[m_prevLevel-1]['Tonic_mean'] = current_Tonic_mean
     levelStatesList[m_prevLevel-1]['Phasic_mean'] = current_Phasic_mean
 
+    progressionStateList[m_Iteration]['Tonic_mean'] = current_Tonic_mean
+    progressionStateList[m_Iteration]['Phasic_mean'] = current_Phasic_mean
+
+    progressionStateList[m_Iteration]['Level'] = m_prevLevel
+
+    m_Iteration+=1
     print("Baseline HR: {0}    HRV: {1}".format(m_baseHR,m_baseHRV)) 
     print ("Phasic:{0}, tonic: {1}, hr: {2}(BPM){3:.3f}, hrv: {4}(RMSSD){5:.3f}".format(phasic_rate,tonic_rate,hr_rate,current_HR,  hrv_rate,current_HRV))
     print("Done with result: {0}".format(result))
@@ -401,6 +443,14 @@ def EvaluateNEATBiodata(client, genomeList, currentGenomeID):
     newGenomeID = 0;
     return newGenomeID #Needs to return what next genome id 
 
+def EndSession():
+    for x in range(5):
+        print("For level {0}:".format(x+1))
+        print(levelStatesList[x])
+    for x in range(5):
+        print("For session part {0}:".format(x+1))
+        print(progressionStateList[x])
+
 botCfgPrefix = 'nonAdam'
 
 pipeName = q3u.SetupPipes(1,args.pipePath)
@@ -409,7 +459,7 @@ baselineDict = {}
 
 m_prevLevel = 3
 
-if args.affective is True:
+if args.affective is True or args.participantID is not None:
     combat = 0 #Three stages: 0: No change, 1: engaged in combat, 2: Combat ended, 3: Evaluation
 
     # Baseline dict for parsing onto the affective evaluator
@@ -454,7 +504,7 @@ def exit_handler():
     pOpen.kill()
     print('Deleting pipes')
     os.remove(pipeName)
-    client.send(b'end')
+    client.send(b'nonAffect')
     client.close()
 
 iterations = 0
@@ -464,6 +514,7 @@ _time = ""
 prev_time = time.time() 
 time_counter = prev_time;
 if args.affective is True:
+    print("Entering affective")
     while True:
         if args.NEAT is True:
             if iterations > 1200:
@@ -484,9 +535,8 @@ if args.affective is True:
                 updates+= 1
             if updates >4:
                     updates = 0;
+                    EndSession()
                     client.send(b'end')
-
-
 
             NonAdamAffectiveRun(pipeName, update_val)
 
@@ -496,5 +546,8 @@ elif args.NEAT is True:
     while True: 
         q3n.ActivationRun(pipeName,genome,config)
 
-if __name__ == '__main__':
+if args.affective is not True:
+    while time_counter-prev_time < 300:
+        time_counter = time.time()
+    client.send(b'nonAffect')
     pOpen.wait()

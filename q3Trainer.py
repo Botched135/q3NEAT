@@ -91,7 +91,7 @@ if args.dry is False:
     #So rather than simply using ready for switch a-roo, it will be used to choose if the next generetation should start
     #Example: Bots runs a test --> All Bots are done --> next frame it checks if all the bots are done --> sends note to python to
     while True: #population.generation < 51:
-            pausing = (True if (iterations > 1200 ) else False)
+            pausing = (True if (iterations > 900 ) else False)
             q3n.TrainingRun(pipeNames,populationDict, config,pausing)
             iterations+=1
             if pausing == True:

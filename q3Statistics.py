@@ -5,15 +5,54 @@ import matplotlib.mlab as mlab
 from scipy import stats
 
 
-AffectiveLoadedData = genfromtxt('NodeJS/CSV/Affect.csv',delimiter=',')
-NonAffectiveLoadedData = genfromtxt('NodeJS/CSV/NonAffect.csv',delimiter=',')
+AffectiveLoadedData = genfromtxt('TestData/Affect.csv',delimiter=',')
+NonAffectiveLoadedData = genfromtxt('TestData/NonAffect.csv',delimiter=',')
 #List of lists.. Each list containing the data about one variable for 
 # Needs to be numpy arrays
 Categories = [		'Competence', 	  'Flow', 	  'Tension/Annoyance',   'Challenge',   'Negative Affect','Positive Affect']
 CategoriesValue =[(4,11,15,17,19),(6,13,23,25,27),    (20,22,26),     (12,21,24,28,29),   (8,9,10,16),     (3,5,7,14,18)]
+CategoryParametric = [ True, 		   True, 			 True, 			    True,             False, 			True]
 
 
 #Each tuple contains info about one category
+
+
+UserData =[]
+for userData in AffectiveLoadedData[9:]:
+	userMeanList = []
+	for cat in CategoriesValue:
+		catVal = 0
+		for index in cat:
+			catVal+=userData[index]
+		catVal /= len(cat)
+		userMeanList.append(catVal)
+	UserData.append(userMeanList)
+
+
+NonUserData = []
+for userData in NonAffectiveLoadedData[9:]:
+	userMeanList = []
+	for cat in CategoriesValue:
+		catVal = 0
+		for index in cat:
+			catVal+=userData[index]
+		catVal /= len(cat)
+		userMeanList.append(catVal)
+	NonUserData.append(userMeanList)
+
+print(Categories)
+iterations = 9
+for Affect, Non in zip(UserData,NonUserData):
+	print("participant {0}:Affective Data for ".format(iterations))
+	print(Affect)
+	print("participant {0}: Non-Affective Data for participant {0}".format(iterations))
+	print(Non)
+	iterations += 1
+
+#for userData in AffectiveLoadedData[1:]
+'''
+
+
 AffectiveData = []
 for userData in AffectiveLoadedData[1:]:
 	userMeanList = []
@@ -25,6 +64,7 @@ for userData in AffectiveLoadedData[1:]:
 		userMeanList.append(catVal)
 	userMeanList = np.array(userMeanList,dtype=float)
 	AffectiveData.append(userMeanList)
+
 
 NonAffectiveData = []
 for userData in NonAffectiveLoadedData[1:]:
@@ -116,52 +156,63 @@ if IsNormalDistributed is False:
 	for AffectiveList, NonAffectiveList in zip(AffectiveData, NonAffectiveData):
 	    LeveneStats = stats.levene(AffectiveList,NonAffectiveList)
 	    LeveneData.append(LeveneStats)
-
-	for cat, lv in zip(Categories, LeveneData):
+	for cat, lv, para in zip(Categories, LeveneData, CategoryParametric):
 	    if lv.pvalue > p_value:
 		    print("Levene: Homogeneity of variance has NOT been violated for {0} at alpha level {1} (p-value: {2:.5f}\tstats: {3:.5f})".format(cat,p_value,lv.pvalue,lv.statistic))
 	    else:
 		    print("Levene: Homogeneity of variance has been violated for {0} at alpha level {1} (p-value: {2:.5f}\tstats:{3:.5f})".format(cat,p_value,lv.pvalue,lv.statistic))
-		    IsParametricData = False
+		    para = False
 else:
 	BartlettData = []
 	for AffectiveList, NonAffectiveList in zip(AffectiveData, NonAffectiveData):
 	    BartlettStats = stats.bartlett(AffectiveList,NonAffectiveList)
 	    BartlettData.append(BartlettStats)
 
-	for cat, lv in zip(Categories, BartlettData):
+	for cat, lv, para in zip(Categories, BartlettData, CategoryParametric):
 		if lv.pvalue > p_value:
 			print("Bartlett: Homogeneity of variance has NOT been violated for {0} at alpha level {1} (p-value: {2:.5f}\tstats:{3:.5f})".format(cat,p_value,lv.pvalue,lv.statistic))
 		else:
 			print("Bartlett: Homogeneity of variance has been violated for {0} at alpha level {1} (p-value: {2:.5f}\tstats:{3:.5f})".format(cat,p_value,lv.pvalue,lv.statistic))
-			IsParametricData = False
+			para = False
 
 #for AD, NonAD, Levene in AffectiveAD, NonAffectiveAD, LeveneData:
 print("\n")
 
 T_testData = []
 
-if IsParametricData is True:
-    for AffectiveList, NonAffectiveList in zip(AffectiveData, NonAffectiveData):
-	    T_testStats = stats.ttest_rel(AffectiveList,NonAffectiveList)
-	    T_testData.append(T_testStats)
-
-    for ttest,cat in zip(T_testData,Categories):
-	    if ttest.pvalue < p_value:
-		    print("There is a signficant difference at alpha level {0} for t-test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat, ttest.statistic , ttest.pvalue))
-	    else:
-		    print("There is a NO signficant difference at alpha level {0} for t-test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat, ttest.statistic , ttest.pvalue))
-else:
-    for AffectiveList, NonAffectiveList in zip(AffectiveData, NonAffectiveData):
+#if IsParametricData is True:
+for AffectiveList, NonAffectiveList, para in zip(AffectiveData, NonAffectiveData, CategoryParametric):
+    T_testStats = None
+    if para is True:
+    	T_testStats = stats.ttest_rel(AffectiveList,NonAffectiveList)
+    else:
     	T_testStats = stats.wilcoxon(AffectiveList,NonAffectiveList)
-    	T_testData.append(T_testStats)
+    T_testData.append(T_testStats)
 
-    for wilcoxon, cat in zip(T_testData,Categories):
-	    if wilcoxon.pvalue < p_value:
-		    print("There is a signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
-	    else:
-		    print("There is NO signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
+for ttest,cat, para in zip(T_testData,Categories, CategoryParametric):
+    if para is True:
+        if ttest.pvalue < p_value:
+	        print("There is a signficant difference at alpha level {0} for t-test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat, ttest.statistic , ttest.pvalue))
+        else:
+	        print("There is a NO signficant difference at alpha level {0} for t-test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat, ttest.statistic , ttest.pvalue))
+    else:
+        if ttest.pvalue < p_value:
+            print("There is a signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,ttest.statistic , ttest.pvalue))
+        else:
+        	print("There is NO signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,ttest.statistic , ttest.pvalue))
+#
 
+#else:
+    #for AffectiveList, NonAffectiveList in zip(AffectiveData, NonAffectiveData):
+   # 	T_testStats = stats.wilcoxon(AffectiveList,NonAffectiveList)
+  #  	T_testData.append(T_testStats)
+
+ #   for wilcoxon, cat in zip(T_testData,Categories):
+#	    if wilcoxon.pvalue < p_value:
+#		    print("There is a signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
+#	    else:
+#		    print("There is NO signficant difference at alpha level {0} for wilcoxon test comparing {1}, stats: {2:.5f} \t p-value {3:.5f}".format(p_value, cat,wilcoxon.statistic , wilcoxon.pvalue))
+#
 
 # width of the bars
 barWidth = 0.3
@@ -210,3 +261,4 @@ plt.title('Comparison of Affective and Non-Affective version')
 plt.legend()
 
 plt.show()
+'''
