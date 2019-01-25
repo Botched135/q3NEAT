@@ -11,11 +11,11 @@ num_outputs             = 4
 initial_connection      = full_direct
 
 feed_forward            = True
-compatibility_disjoint_coefficient = 1.0
-compatibility_weight_coefficient   = 0.75
+compatibility_disjoint_coefficient = 0.7
+compatibility_weight_coefficient   = 0.7
 conn_add_prob           = 0.15
 conn_delete_prob        = 0.1
-node_add_prob           = 0.15
+node_add_prob           = 0.1
 node_delete_prob        = 0.1
 activation_default      = clamped
 activation_options      = clamped
@@ -111,11 +111,11 @@ weight_replace_rate     = 0.1
 compatibility_threshold = 2.5
 
 [DefaultStagnation]
-species_fitness_func = mean
+species_fitness_func = max
 max_stagnation       = 25
-species_elitism      = 1
+species_elitism      = 0
 
 [DefaultReproduction]
-elitism            = 2
+elitism            = 1
 survival_threshold = 0.2
 

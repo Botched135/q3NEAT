@@ -58,7 +58,7 @@ else:
     
 	EDA_df_Affect = pd.read_csv('NodeJS/CSV/Participant{0}EDAAffect{1}.csv'.format(args.participantID,dataType),delimiter=';')
 	processed_eda_Affect =nk.eda_process(EDA_df_Affect["EDA"],freq = 1.9, sampling_rate = 4);
-
+	EDA_df_Affect["EDA"].plot()
 	NonTimeStamps, BVP_Non = genfromtxt('NodeJS/CSV/Participant{0}BVPReg{1}.csv'.format(args.participantID, dataType),delimiter=';',skip_header = 1, unpack = True)
 	working_non, non_m = hb.process(BVP_Non,64.0,calc_freq = True)
 
@@ -73,10 +73,12 @@ else:
 	print("Baseline HR analysis")
 	times, baseline = genfromtxt('NodeJS/CSV/Participant{0}BVPBaseline5.csv'.format(args.participantID, dataType),delimiter=';',skip_header = 1, unpack = True) 
 	wdata, m_baseline = hb.process(baseline,64.0,calc_freq = True)
+	hb.plotter(wdata,m_baseline)
 	print("Average heartrate(BPM): {0}".format(m_baseline['bpm']))
 	print("Average HRV(RMSSD): {0} ".format(m_baseline['rmssd']))
 	print("Average HRV(LF): {0}".format(m_baseline['lf']))
 	working_affect, affect_m = hb.process(BVP_Affect,64.0,calc_freq = True)
+	
 	print("Affective HR analysis:")
 	print("Average heartrate(BPM): {0}".format(affect_m['bpm']))
 	print("Average HRV(RMSSD): {0} ".format(affect_m['rmssd']))

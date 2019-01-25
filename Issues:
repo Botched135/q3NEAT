@@ -1,0 +1,67 @@
+Issues:
+
+It seems like the back radars are causing issues, in the way that they only turn one way, while the front radars do have the correct behaviour
+There is an issue with the right radars, as they seems to ignore. Introducing negative reward for turning wrong way might prove the solution
+
+Test the following:
+	Increase angle speed (did not help alone. Trying to alter front sensor in order not to overshoot it) ( not enough)
+	Shorter genome distance (not enough)
+	Decrease the size of back sensors (need to add an additional sensor on each side then...)(not doing anything)
+	Increase generation time (doesnt really matter)
+	Try punishing for skipping past aim(a little change)
+	Add values, depending on where it is on the radar the enemy appear (question to challenge this: Why not just give the bot the exact direction to the enemy, knowing there is only one? Answer to that is scaling)
+	Give negative reward(punishment) for turning the wrong direciton, or just only reward for turning the right direction
+	Completly random numbers(not helping)
+	Re-instance elitism(not really helping
+	)
+	Try max species function(not helping)
+
+
+
+
+Problem
+
+
+
+
+Testing
+	Angle-speed: 30 seems to be able to follow the player around when there is 20 degree front. It could probably be set to 25, but it needs some edge 
+	20 angle speed, 0.625, still issue with the back 
+	30 angle speed, 0.625, more sensors, seems to be really bad, need to be able to alternate the speed, which it cannot do at the current movement due to the input being either 0 or 1 (retry = no improvement)
+	20 angle speed, 0.625, more sensors, has the same issues as before (retry = looks better, but didnt upgrade )
+	20 angle speed, 0.625, more sensors, double generation time(pretty much the same)
+	20 angle speed, 0.625, more sensors, normal generation time, frames on target reset to zero everytime you turn away, corrected the generation of targets(minimum 45 degrees between each aim target) (Looks promising)(experiment 001) (only turns left now lol)
+	20 angle speed, 0.625, more sensors, normal generation time, frames on target reset to zero everytime you turn away, corrected the generation of targets(minimum 90 degrees between each aim target), (experiment 002)(no difference) (only left)
+	20 angle speed, 0.625, more sensors, normal generation time, frames on target reset to zero everytime you turn away, corrected the generation of targets(minimum 45 degrees between each aim target), seeded random(experiment 003)(seems more varying in performance)
+	20 angle speed, 0.625, more sensors, normal generation time, frames on target reset to zero everytime you turn away, corrected the generation of targets(minimum 90 degrees between each aim target), seeded random(experiment 004)(still only turning right)
+
+	There is just an
+	20 angle speed, 0.7, 9 sensors,frames on target reset, corrected generation(45 minimum dist)(experiment 005)(no change)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, corrected generation(160 minimum dist)(experiment 006)(8.6 fitness,so far best fitness performance), but still only turns one way.. T
+	20 angle speed, 0.7, 9 sensors,frames on target reset, corrected generation(0 minimum dist)(experiment 007) (purely random)(unseeded)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 10 minimum dist, unseeded, punishment (experiment 008)(utterly shit)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 10 minimum dist, unseeded, only reward for turning the right direction (experiment 009)(shit)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 15 minimum dist, unseeded, punishment for wrong direction (experiment 010.1) (seems much better as there are action for both left and right)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 15 minimum dist, unseeded, punishment(divide by punishment), elitism 1, fitness function: max (experiment 011)(works ok )
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 15 minimum dist, unseeded, punishment, no fitness if wrong way once, elitism 1, fitness function: max (experiment 012)(011 is better)
+	20 angle speed, 0.7, 9 sensors,frames on target reset, 120 minimum dist, unseeded, punishment(divide by punishment), elitism 1, fitness function: max (experiment 011)(works ok )
+
+
+	
+	20 angle speed, 0.625, more sensors, normal generation time, frames on target reset to zero everytime you turn away, values varies in radars
+
+	The performance we see is prob due the fact that turning the wrong way is not punished hard enough. We need to solve this by:
+		- Introducing punishment for wrong direction
+		- Make sure that the generated targets switch whether they are right from the current position or left from the current system
+		- adding values other than 0 and 1 to the radars
+		- Add more smaller pie slices further in
+
+
+
+In general:
+Seems like negate turn is set on the front slice, and one of the adjacents 
+
+
+
+
+Minus is turning right, positive is turning left 

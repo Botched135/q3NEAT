@@ -7,10 +7,12 @@ from q3Genome import QuakeGenome
 import q3NEAT as q3n
 import q3Utilities as q3u
 import q3Visualize as q3v
+import copy
 
 pOpens = []
 pipeNames = []
 iterations = 0
+prevPop = None
 
 parser = argparse.ArgumentParser()
 
@@ -25,10 +27,11 @@ parser.add_argument('-t','--speed',type=float, default=5.0,help="Speed/timescale
 parser.add_argument('-g','--gLength',type=int, default=180,help="Length of each generation in seconds")
 parser.add_argument('-d','--dry', action='store_true', help="Dry run (no training)")
 parser.add_argument('--checkpoint',type=str,help="Path to checkpoint for restoring population from disk")
+parser.add_argument('-id','--experimentID', type=str, help="Experiment ID used to track iterations")
 
 args = parser.parse_args()
 
-
+experimentID = args.experimentID
 #INITIALIZATIONimUnboundLocalError
 pausing = False
 
@@ -49,8 +52,13 @@ elif args.checkpoint is not None:
     populationDict = population.population
     keyIter = iter(populationDict.keys())
 elif args.dry is False:
-    raise Exception('Poplation has neither been loaded from disk or initialized!')
+    raise Exception('Poplation has neither been loaded from disk or initialized! Exiting now!')
 
+if experimentID is None and args.dry is False:
+    raise Exception("No exerpimentID! Exiting now!")
+elif args.dry is False:
+    if os.path.exists("winnerGenomes/Experiment{0}/".format(experimentID)):
+        raise Exception('Experiment ID has already been used! Exiting now!')
 #indicers = np.zeros([args.servers,args.agents],dtype=int)
 
 #assert(indicers.size == config.pop_size),("Indicers size is {0}, but should be {1}").format(indicers.size,config.pop_size)
@@ -82,10 +90,11 @@ def exit_handler():
         os.remove(pipe)
     if args.dry is False:
         if population.generation > 5:
-            q3n.EndNEAT(population,stats,config)
+            q3n.EndNEAT(prevPop,experimentID,stats,config)
 
 atexit.register(exit_handler)
 
+test = 0
 # MAIN
 if args.dry is False:
     #So rather than simply using ready for switch a-roo, it will be used to choose if the next generetation should start
@@ -96,15 +105,15 @@ if args.dry is False:
             iterations+=1
             if pausing == True:
 
-                done = q3n.RunNEAT(population,config)
+                done, prevPop = q3n.RunNEAT(population,config)
                 populationDict = population.population
                 keyIter = iter(populationDict.keys())
-                
                 iterations = 0
+                test +=1
                 population.reporters.start_generation(population.generation)
                 #Some kind of break here.. Consider using a thread for the trainer to keep the pipe flow
 
-    q3n.EndNEAT(population,stats,config)
+    q3n.EndNEAT(prevPop,experimentID,stats,config)
 
 
 if __name__ == '__main__':

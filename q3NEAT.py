@@ -6,6 +6,7 @@ import q3Visualize as q3v
 import time
 import datetime
 import os
+import copy
 from neat.six_util import iteritems, itervalues
 
 class CompleteExtinctionException(Exception):
@@ -117,8 +118,12 @@ def ActivationRun(pipeName,genome,config):
         NNOutputs = genome.activate(tuple(q3Data[0][:-1]),config)
         neatString = q3u.NEATDataToString(NNOutputs)
         combatState = q3Data[0][-1]
+        neatString = '1.000,-1.000,-0.600,-1.000,'
+        print(neatString)
+        print(q3Data)
 
     # WRITE TO Q3
+
     pipeOut = open(pipeName,'w')
     pipeOut.write(neatString)
     pipeOut.close()
@@ -151,9 +156,11 @@ def RunNEAT(pop,config):
             pop.reporters.found_solution(config, pop.generation, best)
 
     # Create the next generation from the current generation.
+    prevPop = copy.deepcopy(pop)
     pop.population = pop.reproduction.reproduce(config,pop.species,config.pop_size,pop.generation)
 
-     
+   
+
     # Check for complete extinction.
     if not pop.species.species:
         pop.reporters.complete_extinction()
@@ -174,46 +181,45 @@ def RunNEAT(pop,config):
 
     pop.generation += 1
 
-    return True
+    return True, prevPop
 
-def EndNEAT(pop, stats,config):
-    winner = pop.best_genome
-    winnerName = "Time{1}WinnerG{0}.gv".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
-    winnerFolder = "Time{1}Generation{0}/".format(pop.generation,datetime.datetime.now().strftime("%y-%m-%d-%H-%M"))
-
+def EndNEAT(pop, experimentID,stats,config):
+    winnerID = "Experiment{0}Generation{1}".format(experimentID,pop.generation)
+    winnerFolder = "Experiment{0}/".format(experimentID)
     winnerPath = "winnerGenomes/{0}".format(winnerFolder)
+
+
     if not os.path.exists(winnerPath):
         os.makedirs(winnerPath)
         os.makedirs("{0}visualizations/".format(winnerPath))
 
-    q3v.plot_stats(stats, ylog=True, view=True,filename='{0}visualizations/q3-fitness{1}.svg'.format(winnerPath,winnerName))
-    q3v.plot_species(stats, view = True, filename = '{0}visualizations/q3-species{1}.svg'.format(winnerPath, winnerName))
-    node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[Front-15ø]',
-                 -4:'enemyRadar[1st-Right-12.5ø]', -5:'enemyRadar[1st-Left-12.5ø]',
+    q3v.plot_stats(stats, ylog=True, view=True,filename='{0}visualizations/q3-fitness{1}.svg'.format(winnerPath,winnerID))
+    q3v.plot_species(stats, view = True, filename = '{0}visualizations/q3-species{1}.svg'.format(winnerPath, winnerID))
+    node_name = {-1:'wallRadar[1,0]',-2:'wallRadar[0,1]',-3:'enemyRadar[Front-20ø]',
+                 -4:'enemyRadar[1st-Right-20ø]', -5:'enemyRadar[1st-Left-20ø]',
                  -6:'enemyRadar[2nd-Right-25ø]', -7:'enemyRadar[2nd-Left-25ø]',
-                 -8:'enemyRadar[3rd-Right-45ø]', -9:'enemyRadar[3rd-Left-45ø]',
-                 -10:'enemyRadar[Back-Right-90ø]', -11:'enemyRadar[Back-Left-90ø]',
-                 -12:'OnTarget',
+                 -8:'enemyRadar[3rd-Right-30ø]', -9:'enemyRadar[3rd-Left-30ø]',
+                 -10:'enemyRadar[4th-Right-40ø]', -11:'enemyRadar[4th-Left-40ø]',
+                 -12:'enemyRadar[Back-Right-55ø]', -13:'enemyRadar[Back-Left-55ø]',
+                 -14:'OnTarget',
                   0:'Shoot',1:'Move Forward/Backward',2:'Turn left/right', 3:'Negate Turn'}
 
    
-    winnerPath = "winnerGenomes/{0}".format(winnerFolder)
-
-    if not os.path.exists(winnerPath):
-        os.makedirs(winnerPath)
 
     _species = pop.species.species
-    
+
     for speciesKey in _species:
         genomes = _species[speciesKey].members
         localBest = None
         localBestPath = ""
         for genomeKey in genomes:
             genome = genomes[genomeKey]
+            print(genome.fitness)
             if localBest is None or localBest.fitness < genome.fitness:
                 localBest = genome
-        if(localBest.fitness > 3):
-            localBestPath = "{0}Specie{1}Fitness{2}".format(winnerPath,speciesKey,localBest.fitness)
+                
+        if(localBest.fitness > 2.0):
+            localBestPath = "{0}{2}FitnessSpecie{1}".format(winnerPath,speciesKey,localBest.fitness)
 
             with open(localBestPath,'wb') as f:
                 pickle.dump(localBest,f)

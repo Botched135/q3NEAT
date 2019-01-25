@@ -2,6 +2,7 @@ import os
 import sys
 import neat
 import random
+import math
 
 
 class QuakeGenome(neat.DefaultGenome):
@@ -43,3 +44,5 @@ class QuakeGenome(neat.DefaultGenome):
         #self.totalFit += accuracy-movementFails-deaths
         #self.fitness = self.totalFit/self.age;
         self.fitness = accuracy
+        if math.isinf(self.fitness) and self.fitness < 0:
+            self.fitness = 0.0 
